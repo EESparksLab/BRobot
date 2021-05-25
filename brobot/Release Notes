@@ -1,0 +1,29 @@
+20200401_tric_navigation
+- Removed calibrate_steering.py, joy_publisher_old.py, steering_limits.py, gps_tracker.py
+- Renamed joystick_publisher.py -> joystick_driver.py
+- Renamed trial_data_saver and plotter -> trial_saver.py, trial_plotter.py
+- Consolidated heading controllers as -> robot_controller.py
+- Adding joystick trigger and splitting the drive motors out of the controller
+publishing robot heading as a separate topic
+- Have joystick launch on boot so we don't have to hook up monitor to run robot
+- Removed roboclaw config and created a configuration yaml, now the roboclaw configures everytime
+roboclaw_driver.py is run
+- Relplaced non-functional (at 5Hz) gps_plotter with robot_gui - this displays robot status in
+real time
+
+20200605_tric_navigation
+-fixed bug in robot controller
+[ERROR] [1591368822.225823]: bad callback: <bound method RobotController.gps_head_callback of <__main__.RobotController instance at 0x7f16fa4c1dd0>>
+Traceback (most recent call last):
+  File "/opt/ros/kinetic/lib/python2.7/dist-packages/rospy/topics.py", line 750, in _invoke_callback
+    cb(msg)
+  File "robot_controller.py", line 63, in gps_head_callback
+    v,w = self.get_control()
+TypeError: 'NoneType' object is not iterable
+- Added gps error catch for gps status not equal to 4 (fix)
+- Added gps timeout to eliminate gps disconnect runaway issue
+
+20200615_tric_navigation
+-added stop at home feature
+-added rosbag autosave
+-added gps position and steering angle logging
