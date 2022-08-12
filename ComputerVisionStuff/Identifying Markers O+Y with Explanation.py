@@ -73,7 +73,7 @@ KNOWN_WIDTH = 1.50
 # load the first image that contains an object that is KNOWN TO BE 2 feet
 # from our camera, then find the paper marker in the image, and initialize
 # the focal length
-image = cv2.imread("IMG_1105.jpg")
+image = cv2.imread("Calibration Marker.jpg")
 image = cv2.resize(image, (700, 600))
 marker = find_marker(image)
 #print(marker[1][0])
@@ -93,13 +93,13 @@ cv2.putText(image, "%.2fft" % (inches / 12),
  (image.shape[1] - 200, image.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX,
  2.0, (0, 255, 0), 3)
 img = cv2.resize(image, (700, 600))
-cv2.imshow("IMG_1105.jpg", image)
+cv2.imshow("Calibration Marker.jpg", image)
 cv2.waitKey(0) 
 print('Done')
 
 # SECTION 2: FIND MARKER IN NEW IMAGE
 
-image = cv2.imread("IMG_1062.jpg")
+image = cv2.imread("Orange Marker Test.jpg")
 image = cv2.resize(image, (700, 600))
 marker = find_marker(image)
 inches = distance_to_camera(KNOWN_WIDTH, focalLength, marker[1][0])
@@ -118,6 +118,6 @@ cv2.putText(image, "%.2fft" % (inches / 12),
 
 # resize the images to display
 img = cv2.resize(image, (700, 600))
-cv2.imshow("IMG_1062.jpg", image)
+cv2.imshow("Orange Marker Test.jpg", image)
 cv2.waitKey(0) 
 print('Done')
