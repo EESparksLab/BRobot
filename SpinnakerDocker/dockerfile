@@ -1,0 +1,59 @@
+# This based off an auto generated Dockerfile for ros:ros-base
+# generated from docker_images/create_ros_image.Dockerfile.em
+FROM ros:melodic-ros-base
+
+# install bootstrap tools
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    build-essential \
+    python-rosdep \
+    python-rosinstall \
+    python-vcstools \
+    && rm -rf /var/lib/apt/lists/*
+
+# bootstrap rosdep
+RUN rm /etc/ros/rosdep/sources.list.d/20-default.list
+RUN rosdep init && rosdep update --rosdistro $ROS_DISTRO
+
+# install ros packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-melodic-ros-base=1.4.1-0* \
+    && rm -rf /var/lib/apt/lists/*
+
+#getting the Spinnaker SDK installed in the container
+#the readme lists these dependencies
+RUN sudo apt-get update && apt-get install -y --no-install-recommends \
+	libraw1394-11   		\	
+	libavcodec57    		\
+	libavformat57   		\
+        libswscale4 			\
+	libswresample2  		\
+	libavutil55     		\
+	libgtkmm-2.4-1v5                \
+        libglademm-2.4-1v5		\ 
+	libgtkglextmm-x11-1.2-0v5 	\
+	libgtkmm-2.4-dev        	\
+        libglademm-2.4-dev 		\
+	libgtkglextmm-x11-1.2-dev 	\	
+	libusb-1.0-0		
+#Shit that gets retroactively added in here as I build from the ground up
+RUN sudo apt-get update && apt-get install -y --no-install-recommends \
+	apt-utils		\
+	usbutils		\
+	tree			\
+	vim			\
+	udev	   		\
+	wget    		\
+	libunwind-dev		\
+	ros-melodic-cv-bridge   \
+	ros-melodic-image-transport	
+#First we have to copy the .deb files into the container
+COPY ./src/flycapture2-2.13.3.31-amd64 /spinnakerSoftware/PyCapture
+#currently the install script is too interactive to install from here
+#you will have to do it from inside the docker container
+#RUN /spinnakerSoftware/PyCapture/install_flycapture.sh 
+
+#get the ROS driver into the container
+COPY ./src/install_driver.sh /spinnakerSoftware/install_driver.sh
+RUN chmod +x /spinnakerSoftware/install_driver.sh
+RUN adduser sparkslab
+
