@@ -1,6 +1,6 @@
 # This based off an auto generated Dockerfile for ros:ros-base
 # generated from docker_images/create_ros_image.Dockerfile.em
-FROM ros:kinetic-ros-base
+FROM ros:melodic-ros-base
 
 # install bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -16,7 +16,7 @@ RUN rosdep init && rosdep update --rosdistro $ROS_DISTRO
 
 # install ros packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ros-kinetic-ros-base \
+    ros-melodic-ros-base=1.4.1-0* \
     && rm -rf /var/lib/apt/lists/*
 
 #getting the Spinnaker SDK installed in the container
@@ -52,8 +52,8 @@ RUN sudo apt-get update && apt-get install -y --no-install-recommends \
 	udev	   		\
 	wget    		\
 	libunwind-dev		\
-	ros-kinetic-cv-bridge   \
-	ros-kinetic-image-transport	
+	ros-melodic-cv-bridge   \
+	ros-melodic-image-transport	
 #First we have to copy the .deb files into the container
 COPY ./src/flycapture2-2.13.3.31-amd64 /spinnakerSoftware/PyCapture
 #currently the install script is too interactive to install from here
