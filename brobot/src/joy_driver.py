@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # Import Statements
-import serial
+# import serial
 import time
-import rospy
+import rclpy as rospy
+from rclpy.node import Node
 import math
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
@@ -13,22 +14,13 @@ def read_joy_data():
     rate = rospy.Rate(10)  # must be slower than the motor driver and pot update rates
     while not rospy.is_shutdown():  # CTRL+C ends ros node
         try:
-            ser.flushInput()
-            raw_joy_cmds = ser.readline().rstrip()
-            if raw_joy_cmds.startswith('<') and raw_joy_cmds.endswith('>'):
-                joy_cmds = raw_joy_cmds.strip('<').strip('>')
-                print('Raw joystick inputs:' + str(joy_cmds))
-                joy_list = joy_cmds.split(",")
-                x_joy = int(joy_list[0])
-                y_joy = int(joy_list[1])
-                collect_data = int(joy_list[2])
-                v, w = joystick_to_vw(y_joy, x_joy)
-                joy_publisher(v, w)
-                trigger_pub.publish(collect_data)
+           rospy.Subscriber("joy", String, ps4_handler)
         except:
             pass
         rate.sleep()
 
+def ps4_handler(data):
+    print(data.data)
 
 def joystick_to_vw(x_joy, y_joy):
     ''' velocity (m/s), angular velocity (rad/s)
@@ -69,14 +61,14 @@ def joy_publisher(x_cmd,y_cmd):
 if __name__ == '__main__':
     # Find port in terminal: ls /dev
     # Data comes in as: int -512 to 512
-    ser = serial.Serial('/dev/ttyUSB0', 9600) # baud rate must match arduino code
+    # ser = serial.Serial('/dev/ttyUSB0', 9600) # baud rate must match arduino code
     time.sleep(2)
 
     # Initialize ros node
-    rospy.init_node("joy_driver")  # start the ros node pot_driver
+    rospy.init()  # start the ros node pot_driver
     print('Waiting for joystick data...')
 
     # Setup ros publisher
-    joy_pub = rospy.Publisher('joy_cmd', Twist, queue_size=0)
-    trigger_pub = rospy.Publisher('data_trigger', Bool, queue_size=0)
+    joy_pub = Node.create_publisher(Twist, 'joy_cmd', 10)
+    trigger_pub = Node.create_publisher(Bool, 'data_trigger', 10)
     read_joy_data()

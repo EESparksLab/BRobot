@@ -4,15 +4,17 @@ import math
 import numpy as np
 import time
 import yaml
-
-import rospy
+import rclpy
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 from std_msgs.msg import Float64
 from std_msgs.msg import Int32
 
 from utils.roboclaw_python.roboclaw import Roboclaw
-
+class RosReader:
+    def __init__(self):
+      super().__init__('roboclaw_driver_node')
+      self.joy_sub = self.create_subscription(Twist, '/joy_cmd', roboclaw_driver.joy_cmd_callback, 10)
 
 class RoboclawDriver:
     def __init__(self):
@@ -31,7 +33,7 @@ class RoboclawDriver:
             self.run_motors(M1_counts, M2_counts)  # Send commands to motors
         except:
             print('Roboclaw power disconnected')
-            rospy.signal_shutdown('ERR: Power cutoff')
+            rclpy.shutdown()
 
 
 
@@ -105,18 +107,13 @@ def init_roboclaw():
     time.sleep(1)
 
 
-def subscribe_to_topics():
-    rospy.Timer(rospy.Duration(roboclaw_driver.time_interval), roboclaw_driver.run_roboclaw)
-    rospy.Subscriber('joy_cmd', Twist, roboclaw_driver.joy_cmd_callback)
-    rospy.spin()
-
 
 
 ################################################################################
 
 
 if __name__ == "__main__":
-    rospy.init_node('roboclaw_driver', anonymous=True)
+
 
     # Initialize Motor Driver
     global rc, address
@@ -129,5 +126,9 @@ if __name__ == "__main__":
 
     roboclaw_driver = RoboclawDriver()
 
-    subscribe_to_topics()  # multithreaded loops forever
+    rclpy.init(args=args)
+    ros_reader_node = RosReader()
+    rclpy.spin(ros_reader_node)
+    ros_reader_node.destroy_node()
+    rclpy.shutdown()
     stop_motors()  # on CTRL+C shutdown
