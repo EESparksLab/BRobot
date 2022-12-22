@@ -12,6 +12,7 @@ class Roboclaw:
 		self.timeout = timeout;
 		self._trystimeout = retries
 		self._crc = 0;
+		self._port = serial.Serial(port=self.comport, baudrate=self.rate, timeout=1, interCharTimeout=self.timeout)
 
 	#Command Enums
 	class Cmd():

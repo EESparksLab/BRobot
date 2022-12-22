@@ -5,15 +5,16 @@ import numpy as np
 import time
 import yaml
 import rclpy
+from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 from std_msgs.msg import Float64
 from std_msgs.msg import Int32
 
-from utils.roboclaw_python.roboclaw import Roboclaw
-class RosReader:
+from utils.roboclaw_python.roboclaw_3 import Roboclaw
+class RosReader(Node):
     def __init__(self):
-      super().__init__('roboclaw_driver_node')
+      super().__init__('roboclaw_driver')
       self.joy_sub = self.create_subscription(Twist, '/joy_cmd', roboclaw_driver.joy_cmd_callback, 10)
 
 class RoboclawDriver:
@@ -25,12 +26,16 @@ class RoboclawDriver:
     def joy_cmd_callback(self, cmd):
         self.joy_cmd.linear.x = cmd.linear.x
         self.joy_cmd.angular.z = cmd.angular.z
+        self.run_roboclaw()
+        print("recieved: ", cmd.linear.x,cmd.angular.z)
 
 
-    def run_roboclaw(self, timer):
+    def run_roboclaw(self):
         try:
             M1_counts, M2_counts = self.get_counts()
+            #crashes here
             self.run_motors(M1_counts, M2_counts)  # Send commands to motors
+            print("running motors with counts : ", M1_counts,M2_counts)
         except:
             print('Roboclaw power disconnected')
             rclpy.shutdown()
@@ -102,9 +107,9 @@ def init_roboclaw():
 
     # (address, S3, S4, S5) = (1, 9, 0, 58) S3 Estop (inverted), S5 limit both inverted
     # (address, S3, S4, S5) = (1, 9, 0, 9) S3 Estop (inverted 5V trigger), S5 Estop inverted
-    rc.SetPinFunctions(address,9,0,9)
-    print('Pin functions: ' + str(rc.ReadPinFunctions(address)))
-    time.sleep(1)
+    #rc.SetPinFunctions(address,9,0,9)
+    #print('Pin functions: ' + str(rc.ReadPinFunctions(address)))
+    #time.sleep(1)
 
 
 
@@ -126,7 +131,7 @@ if __name__ == "__main__":
 
     roboclaw_driver = RoboclawDriver()
 
-    rclpy.init(args=args)
+    rclpy.init()
     ros_reader_node = RosReader()
     rclpy.spin(ros_reader_node)
     ros_reader_node.destroy_node()
