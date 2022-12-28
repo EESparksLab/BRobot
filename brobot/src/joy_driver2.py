@@ -8,7 +8,7 @@ class JoystickToTwistNode(Node):
         super().__init__('joystick_to_twist_node')
         self.joy_sub = self.create_subscription(
             Joy, '/joy', self.joy_callback, 10)
-        self.cmd_pub = self.create_publisher(Twist, 'joy_cmd', 10)
+        self.cmd_pub = self.create_publisher(Twist, 'tank_cmd', 10)
         self.cam_triggers = [False, False]
 
     def joy_callback(self, joy_msg):

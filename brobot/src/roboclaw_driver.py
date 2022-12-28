@@ -15,7 +15,7 @@ from utils.roboclaw_python.roboclaw_3 import Roboclaw
 class RosReader(Node):
     def __init__(self):
       super().__init__('roboclaw_driver')
-      self.joy_sub = self.create_subscription(Twist, '/joy_cmd', roboclaw_driver.joy_cmd_callback, 10)
+      self.joy_sub = self.create_subscription(Twist, '/tank_cmd', roboclaw_driver.joy_cmd_callback, 10)
 
 class RoboclawDriver:
     def __init__(self):
