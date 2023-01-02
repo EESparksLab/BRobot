@@ -101,5 +101,11 @@ Docker image is saved just in case (image name is brobot)
 Next is to see if the customizations to the container were even necessary in the first place
     It was not. you can just spin up the osrf/ros:humble-desktop-full and then be on your way!
 
+NOTES from day 4 of the Winter sprint
+Correction to that last statement, we need to install the pyserial python module. so theres that
+
+New problem. Roboclaw is working but it cuts out intermittently and then the node crashes.
+in order to make it bullet proof we are going to have to make a way to find and reset the device when this happens.
+
 
 

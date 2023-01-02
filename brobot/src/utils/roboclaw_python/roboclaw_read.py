@@ -1,5 +1,5 @@
 import time
-from roboclaw import Roboclaw
+from roboclaw_3 import Roboclaw
 
 #Windows comport name
 #rc = Roboclaw("COM9",115200)
@@ -36,9 +36,10 @@ def displayspeed():
 		print ("failed ")
 
 rc.Open()
-address = bytes('0x80','utf-8')
+address = 128
 
 version = rc.ReadVersion(address)
+error_causing_fuckface = rc.ReadMainBatteryVoltage(address)[1] / 10
 if version[0]==False:
 	print ("GETVERSION Failed")
 else:

@@ -15,30 +15,36 @@ from utils.roboclaw_python.roboclaw_3 import Roboclaw
 class RosReader(Node):
     def __init__(self):
       super().__init__('roboclaw_driver')
-      self.joy_sub = self.create_subscription(Twist, '/joy_cmd', roboclaw_driver.joy_cmd_callback, 10)
+      self.joy_sub = self.create_subscription(Twist, '/tank_cmd', roboclaw_driver.joy_cmd_callback, 10)
 
 class RoboclawDriver:
     def __init__(self):
         self.joy_cmd = Twist()
         self.time_interval = 0.05  # seconds between
-
+        self.time_tic = time.perf_counter()
 
     def joy_cmd_callback(self, cmd):
         self.joy_cmd.linear.x = cmd.linear.x
         self.joy_cmd.angular.z = cmd.angular.z
         self.run_roboclaw()
-        print("recieved: ", cmd.linear.x,cmd.angular.z)
 
 
     def run_roboclaw(self):
         try:
             M1_counts, M2_counts = self.get_counts()
-            #crashes here
             self.run_motors(M1_counts, M2_counts)  # Send commands to motors
             print("running motors with counts : ", M1_counts,M2_counts)
+
         except:
             print('Roboclaw power disconnected')
-            rclpy.shutdown()
+            try:
+                if(rc.Open()):
+                    print("roboclaw reconnected")
+                else:
+                    print("rc.open failed")
+            except:
+                print('reconnect failed, node crashing')
+                rclpy.shutdown()
 
 
 
@@ -91,8 +97,8 @@ def init_roboclaw():
     print('Current battery voltage: ' + str(float(rc.ReadMainBatteryVoltage(address)[1])/10))
 
     # address, P, I, D, QPPS
-    rc.SetM1VelocityPID(address, 5.00998, 0.4, 0.0, 5812) #rc.SetM1VelocityPID(address, 0.4, 0.0, 0.0, 545000) #0.7 seems okay with aligned shaft
-    rc.SetM2VelocityPID(address, 4.32053, 0.4, 0.0, 5625)
+    # rc.SetM1VelocityPID(address, 5.00998, 0.4, 0.0, 5812) #rc.SetM1VelocityPID(address, 0.4, 0.0, 0.0, 545000) #0.7 seems okay with aligned shaft
+    # rc.SetM2VelocityPID(address, 4.32053, 0.4, 0.0, 5625)
     time.sleep(1)
     print('M1 Velocity PID: ' + str(rc.ReadM1VelocityPID(address)))
     print('M2 Velocity PID: ' + str(rc.ReadM2VelocityPID(address)))
@@ -118,17 +124,16 @@ def init_roboclaw():
 
 
 if __name__ == "__main__":
-
-
     # Initialize Motor Driver
     global rc, address
     rc = Roboclaw("/dev/ttyACM0", 115200)
-    rc.Open()
-    address = 0x80
-    init_roboclaw()
-    time.sleep(2)
-    print('Motor driver ready...')
-
+    if(rc.Open()):
+        address = 128
+        init_roboclaw()
+        time.sleep(2)
+        print('Motor driver ready...')
+    else:
+        print("open() isn't working")
     roboclaw_driver = RoboclawDriver()
 
     rclpy.init()

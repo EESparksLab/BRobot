@@ -1,7 +1,8 @@
 #!/bin/bash
 docker run -it \
     -v /var/run/dbus/:/var/run/dbus \
-    -v /home/snuc/BRobotRepo/brobot/src:/source \
+    -v /home/jcristia/Documents/GitHub/BRobot/brobot/src:/source \
     --privileged \
-    osrf/ros:humble-desktop-full $@
+    brobot $@
+#     osrf/ros:humble-desktop-full $@
 
