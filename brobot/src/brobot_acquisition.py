@@ -36,14 +36,16 @@ import os
 import PySpin
 import sys
 import rclpy
+import time
 from rclpy.node import Node
 from std_msgs.msg import Bool
 
+
 NUM_IMAGES = 5  # number of images to grab
 class RosReader(Node):
-    def __init__(self,cam):
+    def __init__(self):
       super().__init__('righteye_driver')
-      self.cam_sub = self.create_subscription(Bool, '/righteye_cmd', camera_stream() , 10)
+      self.cam_sub = self.create_subscription(Bool, '/righteye_cmd', camera_stream , 10)
 
 def acquire_images(cam, nodemap, nodemap_tldevice):
     """
@@ -144,9 +146,10 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
         # By default, if no specific color processing algorithm is set, the image
         # processor will default to NEAREST_NEIGHBOR method.
         processor.SetColorProcessing(PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_HQ_LINEAR)
-
+        global camera_stream
         def camera_stream(state):
-            if(state):
+            state_bool = state.data
+            if(state_bool):
                 try:
 
                     #  Retrieve next received image
@@ -181,7 +184,7 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
                         #  name a few.
                         width = image_result.GetWidth()
                         height = image_result.GetHeight()
-                        print('Grabbed Image %d, width = %d, height = %d' % (i, width, height))
+                        print('Grabbed Image, width = %d, height = %d' % (width, height))
 
                         #  Convert image to RGB8
                         #
@@ -197,9 +200,9 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
 
                         # Create a unique filename
                         if device_serial_number:
-                            filename = 'Acquisition-%s-%d.jpg' % (device_serial_number, i)
+                            filename = 'spinPics/Acquisition-%s-%s.jpg' % (device_serial_number,time.strftime("%Y%m%d_%H%M%S"))
                         else:  # if serial number is empty
-                            filename = 'Acquisition-%d.jpg' % i
+                            filename = 'spinPics/Acquisition-%s.jpg' % (time.strftime("%Y%m%d_%H%M%S"))
 
                         #  Save image
                         #
@@ -227,6 +230,7 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
         rclpy.spin(ros_reader_node)
         ros_reader_node.destroy_node()
         rclpy.shutdown()
+        print("rclpy shut down")
         #  End acquisition
         #
         #  *** NOTES ***
@@ -276,7 +280,7 @@ def print_device_info(nodemap):
     return result
 
 
-def run_single_camera(state, cam):
+def run_single_camera(cam):
     """
     This function acts as the body of the example; please see NodeMapInfo example
     for more in-depth comments on setting up cameras.
@@ -374,8 +378,8 @@ def main():
 
         if(int(device_serial_number) == 22247721):
             print('Running example for camera %d...' % i)
-            break
-            result &= run_single_camera(cam)
+            break		       
+    result &= run_single_camera(cam)
 
 
 

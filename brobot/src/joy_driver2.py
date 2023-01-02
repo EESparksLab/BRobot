@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Bool
 
 class JoystickToTwistNode(Node):
     def __init__(self):
@@ -9,7 +10,14 @@ class JoystickToTwistNode(Node):
         self.joy_sub = self.create_subscription(
             Joy, '/joy', self.joy_callback, 10)
         self.cmd_pub = self.create_publisher(Twist, 'tank_cmd', 10)
+        self.r_cam_pub = self.create_publisher(Bool, 'righteye_cmd', 10)
+        self.timer = self.create_timer(0.5,self.timer_callback)
         self.cam_triggers = [False, False]
+    
+    def timer_callback(self):
+    	msg_r = Bool()
+    	msg_r.data = self.cam_triggers[1]
+    	self.r_cam_pub.publish(msg_r)
 
     def joy_callback(self, joy_msg):
         twist_msg = Twist()
@@ -39,7 +47,6 @@ class JoystickToTwistNode(Node):
         if joy_msg.buttons[2] == 1:
             self.cam_triggers[0] = not self.cam_triggers[0]
             print("Left camera is set to: ",self.cam_triggers[0])
-        # camera_handler(self.cam_triggers)
 
 ##also from the old code; I can't see why we need it but better safe than sorry
 def constrain(val, min_val, max_val):
