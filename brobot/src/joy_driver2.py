@@ -9,6 +9,7 @@ class JoystickToTwistNode(Node):
         self.joy_sub = self.create_subscription(
             Joy, '/joy', self.joy_callback, 10)
         self.cmd_pub = self.create_publisher(Twist, 'tank_cmd', 10)
+        self.r_cam_pub = self.create_publisher(Bool, 'righteye_cmd', 10)
         self.cam_triggers = [False, False]
 
     def joy_callback(self, joy_msg):
@@ -35,6 +36,7 @@ class JoystickToTwistNode(Node):
         if joy_msg.buttons[1] == 1:
             self.cam_triggers[1] = not self.cam_triggers[1]
             print("Right camera is set to: ",self.cam_triggers[1])
+            self.r_cam_pub.publish(self.cam_triggers[1])
         #if the left face button is pressed; then toggle the left cam
         if joy_msg.buttons[2] == 1:
             self.cam_triggers[0] = not self.cam_triggers[0]
