@@ -37,13 +37,13 @@ import PySpin
 import sys
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Bool
+from std_msgs.msg import Boolean
 
 NUM_IMAGES = 5  # number of images to grab
 class RosReader(Node):
     def __init__(self,cam):
       super().__init__('righteye_driver')
-      self.cam_sub = self.create_subscription(Bool, '/righteye_cmd', camera_stream() , 10)
+      self.cam_sub = self.create_subscription(Boolean, '/righteye_cmd', camera_stream() , 10)
 
 def acquire_images(cam, nodemap, nodemap_tldevice):
     """

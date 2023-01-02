@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Boolean
 
 class JoystickToTwistNode(Node):
     def __init__(self):
@@ -9,7 +10,7 @@ class JoystickToTwistNode(Node):
         self.joy_sub = self.create_subscription(
             Joy, '/joy', self.joy_callback, 10)
         self.cmd_pub = self.create_publisher(Twist, 'tank_cmd', 10)
-        self.r_cam_pub = self.create_publisher(Bool, 'righteye_cmd', 10)
+        self.r_cam_pub = self.create_publisher(Boolean, 'righteye_cmd', 10)
         self.cam_triggers = [False, False]
 
     def joy_callback(self, joy_msg):
