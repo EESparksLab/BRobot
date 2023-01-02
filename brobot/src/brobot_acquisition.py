@@ -43,7 +43,7 @@ NUM_IMAGES = 5  # number of images to grab
 class RosReader(Node):
     def __init__(self,cam):
       super().__init__('righteye_driver')
-      self.cam_sub = self.create_subscription(Bool, '/righteye_cmd', run_single_camera(cam) , 10)
+      self.cam_sub = self.create_subscription(Bool, '/righteye_cmd', camera_stream() , 10)
 
 def acquire_images(cam, nodemap, nodemap_tldevice):
     """
@@ -145,83 +145,88 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
         # processor will default to NEAREST_NEIGHBOR method.
         processor.SetColorProcessing(PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_HQ_LINEAR)
 
-        for i in range(NUM_IMAGES):
-            try:
+        def camera_stream(state):
+            if(state):
+                try:
 
-                #  Retrieve next received image
-                #
-                #  *** NOTES ***
-                #  Capturing an image houses images on the camera buffer. Trying
-                #  to capture an image that does not exist will hang the camera.
-                #
-                #  *** LATER ***
-                #  Once an image from the buffer is saved and/or no longer
-                #  needed, the image must be released in order to keep the
-                #  buffer from filling up.
-                image_result = cam.GetNextImage(1000)
-
-                #  Ensure image completion
-                #
-                #  *** NOTES ***
-                #  Images can easily be checked for completion. This should be
-                #  done whenever a complete image is expected or required.
-                #  Further, check image status for a little more insight into
-                #  why an image is incomplete.
-                if image_result.IsIncomplete():
-                    print('Image incomplete with image status %d ...' % image_result.GetImageStatus())
-
-                else:
-
-                    #  Print image information; height and width recorded in pixels
+                    #  Retrieve next received image
                     #
                     #  *** NOTES ***
-                    #  Images have quite a bit of available metadata including
-                    #  things such as CRC, image status, and offset values, to
-                    #  name a few.
-                    width = image_result.GetWidth()
-                    height = image_result.GetHeight()
-                    print('Grabbed Image %d, width = %d, height = %d' % (i, width, height))
+                    #  Capturing an image houses images on the camera buffer. Trying
+                    #  to capture an image that does not exist will hang the camera.
+                    #
+                    #  *** LATER ***
+                    #  Once an image from the buffer is saved and/or no longer
+                    #  needed, the image must be released in order to keep the
+                    #  buffer from filling up.
+                    image_result = cam.GetNextImage(1000)
 
-                    #  Convert image to RGB8
+                    #  Ensure image completion
                     #
                     #  *** NOTES ***
-                    #  Images can be converted between pixel formats by using
-                    #  the appropriate enumeration value. Unlike the original
-                    #  image, the converted one does not need to be released as
-                    #  it does not affect the camera buffer.
-                    #
-                    #  When converting images, color processing algorithm is an
-                    #  optional parameter.
-                    image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
+                    #  Images can easily be checked for completion. This should be
+                    #  done whenever a complete image is expected or required.
+                    #  Further, check image status for a little more insight into
+                    #  why an image is incomplete.
+                    if image_result.IsIncomplete():
+                        print('Image incomplete with image status %d ...' % image_result.GetImageStatus())
 
-                    # Create a unique filename
-                    if device_serial_number:
-                        filename = 'Acquisition-%s-%d.jpg' % (device_serial_number, i)
-                    else:  # if serial number is empty
-                        filename = 'Acquisition-%d.jpg' % i
+                    else:
 
-                    #  Save image
-                    #
-                    #  *** NOTES ***
-                    #  The standard practice of the examples is to use device
-                    #  serial numbers to keep images of one device from
-                    #  overwriting those of another.
-                    image_converted.Save(filename)
-                    print('Image saved at %s' % filename)
+                        #  Print image information; height and width recorded in pixels
+                        #
+                        #  *** NOTES ***
+                        #  Images have quite a bit of available metadata including
+                        #  things such as CRC, image status, and offset values, to
+                        #  name a few.
+                        width = image_result.GetWidth()
+                        height = image_result.GetHeight()
+                        print('Grabbed Image %d, width = %d, height = %d' % (i, width, height))
 
-                    #  Release image
-                    #
-                    #  *** NOTES ***
-                    #  Images retrieved directly from the camera (i.e. non-converted
-                    #  images) need to be released in order to keep from filling the
-                    #  buffer.
-                    image_result.Release()
-                    print('')
+                        #  Convert image to RGB8
+                        #
+                        #  *** NOTES ***
+                        #  Images can be converted between pixel formats by using
+                        #  the appropriate enumeration value. Unlike the original
+                        #  image, the converted one does not need to be released as
+                        #  it does not affect the camera buffer.
+                        #
+                        #  When converting images, color processing algorithm is an
+                        #  optional parameter.
+                        image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
 
-            except PySpin.SpinnakerException as ex:
-                print('Error: %s' % ex)
-                return False
+                        # Create a unique filename
+                        if device_serial_number:
+                            filename = 'Acquisition-%s-%d.jpg' % (device_serial_number, i)
+                        else:  # if serial number is empty
+                            filename = 'Acquisition-%d.jpg' % i
 
+                        #  Save image
+                        #
+                        #  *** NOTES ***
+                        #  The standard practice of the examples is to use device
+                        #  serial numbers to keep images of one device from
+                        #  overwriting those of another.
+                        image_converted.Save(filename)
+                        print('Image saved at %s' % filename)
+
+                        #  Release image
+                        #
+                        #  *** NOTES ***
+                        #  Images retrieved directly from the camera (i.e. non-converted
+                        #  images) need to be released in order to keep from filling the
+                        #  buffer.
+                        image_result.Release()
+                        print('')
+
+                except PySpin.SpinnakerException as ex:
+                    print('Error: %s' % ex)
+                    return False
+        rclpy.init()
+        ros_reader_node = RosReader()
+        rclpy.spin(ros_reader_node)
+        ros_reader_node.destroy_node()
+        rclpy.shutdown()
         #  End acquisition
         #
         #  *** NOTES ***
@@ -294,9 +299,8 @@ def run_single_camera(state, cam):
 
         # Retrieve GenICam nodemap
         nodemap = cam.GetNodeMap()
-        if(state):
         # Acquire images
-            result &= acquire_images(cam, nodemap, nodemap_tldevice)
+        result &= acquire_images(cam, nodemap, nodemap_tldevice)
 
         # Deinitialize camera
         cam.DeInit()
@@ -371,13 +375,9 @@ def main():
         if(int(device_serial_number) == 22247721):
             print('Running example for camera %d...' % i)
             break
-            # result &= run_single_camera(cam)
+            result &= run_single_camera(cam)
 
-    rclpy.init()
-    ros_reader_node = RosReader(cam)
-    rclpy.spin(ros_reader_node)
-    ros_reader_node.destroy_node()
-    rclpy.shutdown()
+
 
 
     # Release reference to camera
