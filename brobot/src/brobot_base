@@ -2,6 +2,7 @@
 docker run -it \
     -v /var/run/dbus/:/var/run/dbus \
     -v /home/snuc/BRobotRepo/brobot/src:/source \
+    -v /home/snuc/BRobotRepo/brobot/src/spinPics:/spinPics \
     --privileged \
     brobot $@
 #     osrf/ros:humble-desktop-full $@

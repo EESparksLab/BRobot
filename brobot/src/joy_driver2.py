@@ -11,13 +11,17 @@ class JoystickToTwistNode(Node):
             Joy, '/joy', self.joy_callback, 10)
         self.cmd_pub = self.create_publisher(Twist, 'tank_cmd', 10)
         self.r_cam_pub = self.create_publisher(Bool, 'righteye_cmd', 10)
+        self.l_cam_pub = self.create_publisher(Bool, 'lefteye_cmd', 10)
         self.timer = self.create_timer(0.5,self.timer_callback)
         self.cam_triggers = [False, False]
     
     def timer_callback(self):
     	msg_r = Bool()
+    	msg_l = Bool()
+    	msg_l.data = self.cam_triggers[0]
     	msg_r.data = self.cam_triggers[1]
     	self.r_cam_pub.publish(msg_r)
+    	self.l_cam_pub.publish(msg_l)
 
     def joy_callback(self, joy_msg):
         twist_msg = Twist()

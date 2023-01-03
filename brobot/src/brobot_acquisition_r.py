@@ -49,7 +49,6 @@ class RosReader(Node):
 
 def acquire_images(cam, nodemap, nodemap_tldevice):
     """
-    This function acquires and saves 10 images from a device.
 
     :param cam: Camera to acquire images from.
     :param nodemap: Device nodemap.
@@ -147,11 +146,21 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
         # processor will default to NEAREST_NEIGHBOR method.
         processor.SetColorProcessing(PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_HQ_LINEAR)
         global camera_stream
+        global img_series_str
+        img_series_str = ""
+        global img_series_count
+        img_series_count =  0
+
         def camera_stream(state):
+            global img_series_count
+            global img_series_str
             state_bool = state.data
             if(state_bool):
+                if img_series_count == 0:
+                    img_series_str = time.strftime("%Y%m%d_%H%M%S")
+                    os.mkdir('/spinPics/rightCam/'+ img_series_str, 0o777)
+                    os.chmod('/spinPics/rightCam/'+ img_series_str, 0o777)
                 try:
-
                     #  Retrieve next received image
                     #
                     #  *** NOTES ***
@@ -184,7 +193,7 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
                         #  name a few.
                         width = image_result.GetWidth()
                         height = image_result.GetHeight()
-                        print('Grabbed Image, width = %d, height = %d' % (width, height))
+                        print('Grabbed Image %d, width = %d, height = %d' % (img_series_count,width, height))
 
                         #  Convert image to RGB8
                         #
@@ -199,11 +208,11 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
                         image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
 
                         # Create a unique filename
-                        if device_serial_number:
-                            filename = 'spinPics/Acquisition-%s-%s.jpg' % (device_serial_number,time.strftime("%Y%m%d_%H%M%S"))
-                        else:  # if serial number is empty
-                            filename = 'spinPics/Acquisition-%s.jpg' % (time.strftime("%Y%m%d_%H%M%S"))
-
+                        #if device_serial_number:
+                            #filename = '/spinPics/Acquisition-%s-%s.jpg' % (device_serial_number,time.strftime("%Y%m%d_%H%M%S"))
+                        #else:  # if serial number is empty
+                            #filename = '/spinPics/Acquisition-%s.jpg' % (time.strftime("%Y%m%d_%H%M%S"))
+                        filename = '/spinPics/rightCam/%s/%d.jpg' % (img_series_str,img_series_count)
                         #  Save image
                         #
                         #  *** NOTES ***
@@ -211,6 +220,7 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
                         #  serial numbers to keep images of one device from
                         #  overwriting those of another.
                         image_converted.Save(filename)
+                        os.chmod(filename, 0o777)
                         print('Image saved at %s' % filename)
 
                         #  Release image
@@ -221,10 +231,13 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
                         #  buffer.
                         image_result.Release()
                         print('')
-
+                        img_series_count += 1
                 except PySpin.SpinnakerException as ex:
                     print('Error: %s' % ex)
                     return False
+            else:
+                img_series_count = 0
+                img_series_str = ""
         rclpy.init()
         ros_reader_node = RosReader()
         rclpy.spin(ros_reader_node)
@@ -377,7 +390,7 @@ def main():
             print('Device serial number retrieved as %s...' % device_serial_number)
 
         if(int(device_serial_number) == 22247721):
-            print('Running example for camera %d...' % i)
+            print('Running camera %d...' % i)
             break		       
     result &= run_single_camera(cam)
 
