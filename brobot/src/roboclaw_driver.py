@@ -77,14 +77,14 @@ class RoboclawDriver:
 
     ''' Send motor commands, M1 drive, M2 steer '''
     def run_motors(self, M1_counts, M2_counts):
-        #max_counts = 2000
-        #M1_duty = self.constrain(int(100 * M1_counts/max_counts), 0, 100)
-        #M2_duty = self.constrain(int(100 * M2_counts/max_counts), 0, 100)
-        #rc.DutyM1M2(address, M1_duty, M2_duty)
-        #print('Running motors: ' + str(M1_duty) + ', ' + str(M2_duty))
-        rc.SpeedM1(address, int(M1_counts))  # M1 for linear movement
-        rc.SpeedM2(address, int(M2_counts))
-        print('Running motors: ' + str(M1_counts) + ', ' + str(M2_counts))
+        max_counts = 650
+        M1_duty = self.constrain(int(16000 * M1_counts/max_counts), -16000, 16000)
+        M2_duty = self.constrain(int(-16000 * M2_counts/max_counts), -16000, 16000)
+        rc.DutyM1M2(address, M1_duty, M2_duty)
+        print('Running motors: ' + str(M1_duty) + ', ' + str(M2_duty))
+        #rc.SpeedM1(address, int(M1_counts))  # M1 for linear movement
+        #rc.SpeedM2(address, int(M2_counts))
+        #print('Running motors: ' + str(M1_counts) + ', ' + str(M2_counts))
 
 
 def stop_motors():
@@ -104,8 +104,8 @@ def init_roboclaw():
     print('M2 Velocity PID: ' + str(rc.ReadM2VelocityPID(address)))
 
     # address, P, I, D, Imax, deadzone, min_cnts_limit, max_cnts_limit
-    rc.SetM1MaxCurrent(address, 2500) #milliamps, max running at 25 amps
-    rc.SetM2MaxCurrent(address, 2500) #milliamps
+    rc.SetM1MaxCurrent(address, 20000) #milliamps, max running at 20 amps
+    rc.SetM2MaxCurrent(address, 20000) #milliamps
     time.sleep(1)
     #print('M1 Position PID: ' + str(rc.ReadM1PositionPID(address)))
     print('M1 Max Current: ' + str(rc.ReadM1MaxCurrent(address)))

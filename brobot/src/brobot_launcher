@@ -1,0 +1,22 @@
+#!/bin/bash
+#Brobot launching script
+
+#runs the built ros2 joystick node 
+nohup ros2 run joy joy_node &
+
+#runs the joy_driver2 control node 
+nohup python3 source/joy_driver2.py &
+
+#runs the roboclaw_driver node to run the tank base 
+nohup python3 source/roboclaw_driver.py &
+
+#runs the left camera 
+nohup python3 source/brobot_acquisition_l.py &
+
+#runs the right camera 
+nohup python3 source/brobot_acquisition_r.py &
+
+while true; do 
+	sleep 1h
+done
+
