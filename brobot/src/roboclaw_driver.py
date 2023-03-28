@@ -104,8 +104,8 @@ def init_roboclaw():
     print('M2 Velocity PID: ' + str(rc.ReadM2VelocityPID(address)))
 
     # address, P, I, D, Imax, deadzone, min_cnts_limit, max_cnts_limit
-    rc.SetM1MaxCurrent(address, 20000) #milliamps, max running at 20 amps
-    rc.SetM2MaxCurrent(address, 20000) #milliamps
+    rc.SetM1MaxCurrent(address, 30000) #milliamps, max running at 20 amps
+    rc.SetM2MaxCurrent(address, 30000) #milliamps
     time.sleep(1)
     #print('M1 Position PID: ' + str(rc.ReadM1PositionPID(address)))
     print('M1 Max Current: ' + str(rc.ReadM1MaxCurrent(address)))
