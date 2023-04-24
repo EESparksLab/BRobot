@@ -1,3 +1,6 @@
+##Prompted by Joe Cristiano
+##created by GPT3.5
+
 import cv2
 from skimage.metrics import structural_similarity as ssim
 
@@ -5,7 +8,10 @@ from skimage.metrics import structural_similarity as ssim
 ref_image = cv2.imread('focus_reference_image.png')
 test_image = cv2.imread('test_image.png')
 
-# Convert the images to grayscale
+# Check if the images are the same size and resize the test image if needed
+if ref_image.shape != test_image.shape:
+    test_image = cv2.resize(test_image, (ref_image.shape[1], ref_image.shape[0]))
+
 ref_image_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
 test_image_gray = cv2.cvtColor(test_image, cv2.COLOR_BGR2GRAY)
 
