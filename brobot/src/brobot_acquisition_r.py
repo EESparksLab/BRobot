@@ -388,7 +388,7 @@ def main():
         if PySpin.IsReadable(node_device_serial_number):
             device_serial_number = node_device_serial_number.GetValue()
             print('Device serial number retrieved as %s...' % device_serial_number)
-
+	
         if(int(device_serial_number) == 22247721):
             print('Running camera %d...' % i)
             break		       

@@ -40,6 +40,7 @@ import time
 from rclpy.node import Node
 from std_msgs.msg import Bool
 
+print("Testing file output, left camera file")
 
 NUM_IMAGES = 5  # number of images to grab
 class RosReader(Node):

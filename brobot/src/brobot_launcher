@@ -11,11 +11,15 @@ nohup python3 /source/joy_driver2.py > joydriver.out 2>&1 &
 nohup python3 /source/roboclaw_driver.py > robo.out 2>&1 &
 
 #runs the left camera 
-nohup python3 /source/brobot_acquisition_l.py > l_camera.out 2>&1 &
+nohup python3 /source/brobot_acquisition_l.py > l_camera.out &
 
 #runs the right camera 
 nohup python3 /source/brobot_acquisition_r.py > r_camera.out 2>&1 &
 
+#runs the control pannel
+nohup python3 /source/conttrol_panel.py 2>&1 > control_panel.out &
+
+echo "launcher script complete"
 while true; do 
 	sleep 1h
 done
