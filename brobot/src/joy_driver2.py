@@ -22,7 +22,6 @@ class JoystickToTwistNode(Node):
     	msg_r.data = self.cam_triggers[1]
     	self.r_cam_pub.publish(msg_r)
     	self.l_cam_pub.publish(msg_l)
-
     def joy_callback(self, joy_msg):
         twist_msg = Twist()
 

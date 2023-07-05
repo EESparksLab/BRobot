@@ -16,6 +16,7 @@ class RosReader(Node):
     def __init__(self):
       super().__init__('roboclaw_driver')
       self.joy_sub = self.create_subscription(Twist, '/tank_cmd', roboclaw_driver.joy_cmd_callback, 10)
+      self.battery_pub = self.create_publisher(Float64, 'battery', 10)
 
 class RoboclawDriver:
     def __init__(self):
@@ -34,7 +35,9 @@ class RoboclawDriver:
             M1_counts, M2_counts = self.get_counts()
             self.run_motors(M1_counts, M2_counts)  # Send commands to motors
             print("running motors with counts : ", M1_counts,M2_counts)
-
+            msg_batt = Float64()
+            msg_batt.data = float(rc.ReadMainBatteryVoltage(address)[1])/10
+            self.battery_pub.publish(msg_batt) 
         except:
             print('Roboclaw power disconnected')
             try:
@@ -104,9 +107,9 @@ def init_roboclaw():
     print('M2 Velocity PID: ' + str(rc.ReadM2VelocityPID(address)))
 
     # address, P, I, D, Imax, deadzone, min_cnts_limit, max_cnts_limit
-    rc.SetM1MaxCurrent(address, 30000) #milliamps, max running at 20 amps
-    rc.SetM2MaxCurrent(address, 30000) #milliamps
-    time.sleep(1)
+    #rc.SetM1MaxCurrent(address, 30000) #milliamps, max running at 30 amps
+    #rc.SetM2MaxCurrent(address, 30000) #milliamps
+    #time.sleep(1)
     #print('M1 Position PID: ' + str(rc.ReadM1PositionPID(address)))
     print('M1 Max Current: ' + str(rc.ReadM1MaxCurrent(address)))
     print('M2 Max Current: ' + str(rc.ReadM2MaxCurrent(address)))
