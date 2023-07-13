@@ -1,0 +1,55 @@
+#!/bin/bash
+## The purpose of this script is to start the robot when all devices are detected and ready
+## Requirements: 
+## 	-lightweight for when the computer is not piloting
+##	-wait for all devices to be connected
+## 	-Logging 
+logLocation="/home/snuc/brobot/src/brobot_startup.log"
+echo $(date) >> $logLocation
+echo $(date)
+##base off of grepping lsUSB for cameras
+readyState=0
+while [ $readyState -lt 3 ] 
+do
+	sleep 10
+	usbdevices=$(lsusb)
+	readyState=0
+	## testing for cameras 
+	## make sure there's 2 
+	camtest=$(wc -l <<< `grep "Blackfly" <<< $usbdevices`)
+	if [[ "$camtest" -eq 2 ]]; then
+		echo "Cameras were detected" >> $logLocation
+		let readyState=readyState+1
+	elif [[ "$camtest" -eq 1 ]]; then
+		echo "1 Camera was detected" >> $logLocation
+	else
+		echo "not enough cameras" >> $logLocation
+		
+	fi 
+	## testing for roboclaw
+	## test return of grep -q (0 when found; else non-zero)
+	if grep -q "Atmel" <<< $usbdevices; then
+		echo "Roboclaw was found" >> $logLocation
+		let readyState=readyState+1
+	else
+		echo "Roboclaw was not found" >> $logLocation
+	fi
+
+	## test for controller @ js0   
+	## test grep return
+	if grep -q "js0" <<< $(ls /dev/input); then
+		echo "Controller was found" >> $logLocation
+		let readyState=readyState+1
+	else 
+		echo "Controller was not found" >> $logLocation
+	fi 
+done
+#Now we can start the Brobot program
+echo "starting Brobot program" >> $logLocation
+docker run \
+    -v /var/run/dbus/:/var/run/dbus \
+    -v /home/snuc/brobot/src:/source \
+    -v /home/snuc/brobot/src/spinPics:/spinPics \
+    --privileged \
+    brobot /source/brobot_launcher >> $logLocation
+##/home/snuc/brobot/src/brobot_base /source/brobot_launcher >> $logLocation
