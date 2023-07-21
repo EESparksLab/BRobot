@@ -42,6 +42,7 @@ from std_msgs.msg import Bool
 
 
 NUM_IMAGES = 5  # number of images to grab
+CAM_SN = 23185348 #serial number of the right camera
 class RosReader(Node):
     def __init__(self):
       super().__init__('righteye_driver')
@@ -388,10 +389,10 @@ def main():
         if PySpin.IsReadable(node_device_serial_number):
             device_serial_number = node_device_serial_number.GetValue()
             print('Device serial number retrieved as %s...' % device_serial_number)
-	
-        if(int(device_serial_number) == 22247721):
+
+        if(int(device_serial_number) == CAM_SN):
             print('Running camera %d...' % i)
-            break		       
+            break
     result &= run_single_camera(cam)
 
 

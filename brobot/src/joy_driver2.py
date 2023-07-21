@@ -3,7 +3,8 @@ from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
-
+debounce_r = 0
+debounce_l = 0
 class JoystickToTwistNode(Node):
     def __init__(self):
         super().__init__('joystick_to_twist_node')
@@ -14,7 +15,7 @@ class JoystickToTwistNode(Node):
         self.l_cam_pub = self.create_publisher(Bool, 'lefteye_cmd', 10)
         self.timer = self.create_timer(0.5,self.timer_callback)
         self.cam_triggers = [False, False]
-    
+
     def timer_callback(self):
     	msg_r = Bool()
     	msg_l = Bool()
@@ -23,6 +24,9 @@ class JoystickToTwistNode(Node):
     	self.r_cam_pub.publish(msg_r)
     	self.l_cam_pub.publish(msg_l)
     def joy_callback(self, joy_msg):
+        global debounce_r, debounce_l
+        debounce_r += 1
+        debounce_l += 1
         twist_msg = Twist()
 
         y_joy = joy_msg.axes[3] #right joystick y axis
@@ -43,12 +47,14 @@ class JoystickToTwistNode(Node):
         self.cmd_pub.publish(twist_msg)
 
         #if the right face button is pressed; then toggle the right cam
-        if joy_msg.buttons[1] == 1:
+        if joy_msg.buttons[1] == 1 and debounce_r > 3:
             self.cam_triggers[1] = not self.cam_triggers[1]
+            debounce_r = 0
             print("Right camera is set to: ",self.cam_triggers[1])
         #if the left face button is pressed; then toggle the left cam
-        if joy_msg.buttons[2] == 1:
+        if joy_msg.buttons[2] == 1 and debounce_l > 3:
             self.cam_triggers[0] = not self.cam_triggers[0]
+            debounce_l = 0
             print("Left camera is set to: ",self.cam_triggers[0])
 
 ##also from the old code; I can't see why we need it but better safe than sorry
