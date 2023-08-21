@@ -37,9 +37,9 @@ class RoboclawDriver:
             print("running motors with counts : ", M1_counts,M2_counts)
             msg_batt = Float64()
             msg_batt.data = float(rc.ReadMainBatteryVoltage(address)[1])/10
-            self.battery_pub.publish(msg_batt) 
+            self.battery_pub.publish(msg_batt)
         except:
-            print('Roboclaw power disconnected')
+            print('Roboclaw disconnected')
             try:
                 if(rc.Open()):
                     print("roboclaw reconnected")
@@ -129,7 +129,7 @@ def init_roboclaw():
 if __name__ == "__main__":
     # Initialize Motor Driver
     global rc, address
-    rc = Roboclaw("/dev/ttyACM0", 115200)
+    rc = Roboclaw("/dev/ttyACM1", 115200)
     if(rc.Open()):
         address = 128
         init_roboclaw()

@@ -4,8 +4,10 @@ docker run -it \
     -v /var/run/dbus/:/var/run/dbus \
     -v $SRCDIR:/source \
     -v $SRCDIR/spinPics:/spinPics \
+    --device=/dev/ttyACM0   \
+    --device=/dev/ttyACM1   \
     --privileged \
-    brobot $@ 
+    brobot $@
 
 #     osrf/ros:humble-desktop-full $@
 # -v /home/jcristia/Documents/GitHub/BRobot/brobot/src:/source \

@@ -3,11 +3,14 @@
 int value = 0;
 int PIN_R = 2;
 int PIN_L = 3;
+int PIN_PRECHARGE = 12;
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
   Serial.begin(9600);
   pinMode(PIN_R, OUTPUT);
   pinMode(PIN_L, OUTPUT);
+  pinMode(PIN_PRECHARGE, OUTPUT);
+  digitalWrite(PIN_PRECHARGE, HIGH);
   digitalWrite(PIN_R, LOW);
   digitalWrite(PIN_L, LOW);  
 }
@@ -15,6 +18,7 @@ void setup() {
 // the loop function runs over and over again forever
 void loop() {
   if (Serial.available()) { // if there's data coming in from the serial connection
+    digitalWrite(PIN_PRECHARGE, LOW);
     String inputString = Serial.readStringUntil('\n');
     switch(inputString[0]) {
       case 'r': 

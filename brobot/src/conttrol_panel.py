@@ -1,4 +1,4 @@
-#ROS interfacing with brobot control panel
+  #ROS interfacing with brobot control panel
 import serial
 import rclpy
 from rclpy.node import Node
@@ -12,7 +12,7 @@ previousState_r = False
 previous_file_time_r = 0
 previous_file_time_l = 0
 
-ser = serial.Serial('/dev/ttyACM0',9600,timeout=1)
+ser = serial.Serial('/dev/ttyUSB0',9600,timeout=1)
 
 class RosReader(Node):
     def __init__(self):
