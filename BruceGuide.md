@@ -8,14 +8,15 @@
 | 4 | Operation Instructions |   
 
 ### Control Scheme
-![BlueController](https://github.com/EESparksLab/BRobot/assets/78066794/c93e77f7-ab6e-44b8-a000-88a5c365376a)
+<img width="818" alt="BruceController" src="https://github.com/EESparksLab/BRobot/assets/78066794/f205c442-89e6-4a53-b365-8fea7138fcc9">
+
 
 Brobot Controls are still rather primitive! 
 ##### Startup the controller
 Normally, the controller will already be set up with the Brain. Hit the power button in the center of the controller the indicator LED will *Blink White* then glow *Solid Blue* when connected to the computer.   
 
 ##### Pairing the device
-TODO: add pictures     
+TODO: add screenshots    
 In the event that you need to setup a controller with a Brobot Brain, follow these steps:     
 1. Setup the Brobot Brain at a monitor and keyboard station as you will need to access the *Bluetooth menu*
 2. If there are entries for "wireless controller", delete them, as they could be duplicates. 
@@ -25,37 +26,31 @@ In the event that you need to setup a controller with a Brobot Brain, follow the
 
 ### Diagram of the Tank
 
-<img width="630" alt="BettyTankDiagram" src="https://github.com/EESparksLab/BRobot/assets/78066794/c1a38738-ae14-452f-b5d8-5cfebd76d749">
+<img width="608" alt="Bruce tank diagram" src="https://github.com/EESparksLab/BRobot/assets/78066794/35a2cae2-5bb0-414c-8802-16974eb1e5e4">
 
-Betty is now closed with a top lid made of clear acrylic. This makes it easier to see the internals. A nice feature of this is that you can see the Roboclaw motor driver and its 3 feedback LEDS. 
-When the Brobot program starts up, you will see the roboclaw blink 3 times, after this you will be able to controll the tank, as it recieves commands it will also blink and flash with the data coming in. 
-If Brobot batteries are too low, the roboclaw indicator lights with flash 4 times periodically.    
 
 If anything starts sparking or smoking you should head to safety and probably call the fire department.
 
 ### Process of Startup
-WARNING: These instructions begin once the BRobot is in wheeled to its starting position and on the ground. Do not power on the BRobot before it is on the ground and ready to be run. 
+WARNING: These instructions begin once the BRobot has been wheeled to its starting position and on the ground. Do not power on the BRobot before it is on the ground and ready to be run. 
 It has already attempted suicide once before
-1. Field Batteries     
-  Brobot Betty uses an external battery pack to power the brain. Plug the connector into the wire coming out of the BettyTank.          
-  <img width="546" alt="BettyBatteries" src="https://github.com/EESparksLab/BRobot/assets/78066794/99a02071-cfb8-4615-8ba6-270ab3b3ffe0">       
-             
-  <img width="602" alt="BettyBatteryCharging" src="https://github.com/EESparksLab/BRobot/assets/78066794/932dec43-64a3-48cc-ba14-73e696bdddc2">
-  For charging, connect the aligator clips to one of the cells with the correct polarity. The charging block will indicate when the battery is charged.
+  
+1. Plug everything into the brain      
+<img width="601" alt="Brucebrainback" src="https://github.com/EESparksLab/BRobot/assets/78066794/ca62e41e-1d6d-43a7-9d3f-240f7b4ecbd2">
 
-2. Plug everything into the brain      
-<img width="602" alt="BettyBrainBack" src="https://github.com/EESparksLab/BRobot/assets/78066794/456f4ca6-c6c0-4d5b-abd3-61847e21f65b">
 <img width="506" alt="BettyBrainfront" src="https://github.com/EESparksLab/BRobot/assets/78066794/6540f197-b939-43d4-b570-031b114aeeb4">
 
 3. Power on the brain
 Using the power button on the front of the brain. The LED will glow *White*
+<img width="564" alt="BruceCharging" src="https://github.com/EESparksLab/BRobot/assets/78066794/6dce90fa-9f4b-4050-8d43-efef0ee88645">
 
 4. Power on the controller
   See the controller section for more info
 5. Power on the Tank
-  <img width="647" alt="BettyPower charging" src="https://github.com/EESparksLab/BRobot/assets/78066794/a65d43b1-700b-4a84-9cbd-5828f80b155b">
+   
+  
 
-6. Drive
+7. Drive
    Try to keep even spacing between the lenses of the cameras and the subject!
 
 
