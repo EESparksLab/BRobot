@@ -37,8 +37,8 @@ class JoystickToTwistNode(Node):
         ymax_in, xmax_in = 1.0, 1.0
         #  ADJUST THESE VALUES TO CHANGE FORWARD VELOCITY (v) OR STEERING VELOCITY (w)
         #  Set min = -max    ## no idea what this means
-        ymin_out, xmin_out = -1.5, -1.0  #min v, min w
-        ymax_out, xmax_out = 1.5, 1.0    #max v, max w
+        ymin_out, xmin_out = -1.0, -1.0  #min v, min w
+        ymax_out, xmax_out = 1.0, 1.0    #max v, max w
         M1_map = (y_joy -ymin_in) * (ymax_out-ymin_out) / (ymax_in-ymin_in) + ymin_out
         M2_map = (x_joy -xmin_in) * (xmax_out-xmin_out) / (xmax_in-xmin_in) + xmin_out
 
@@ -65,8 +65,6 @@ def constrain(val, min_val, max_val):
         val = max_val
     return val
 
-# def camera_handler([right,left])
-#     if
 
 def main(args=None):
     rclpy.init(args=args)
