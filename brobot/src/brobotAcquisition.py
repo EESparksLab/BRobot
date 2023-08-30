@@ -42,6 +42,8 @@ def acquire_images(cam_list):
     :return: True if successful, False otherwise.
     :rtype: bool
     """
+    rclpy.init()
+    ros_reader_node = RosReader()
 
     print('*** IMAGE ACQUISITION ***\n')
     try:
@@ -106,6 +108,7 @@ def acquire_images(cam_list):
         l_img_series_count = 0
         l_img_series_str = ""
         while(1):
+            rclpy.spin_once(ros_reader_node) #spin the node, check for  messages
             global r_acquisition_state
             global l_acquisition_state
             print(r_acquisition_state)
@@ -156,8 +159,8 @@ def acquire_images(cam_list):
 
                                 if l_img_series_count == 0:
                                     l_img_series_str = time.strftime("%Y%m%d_%H%M%S")
-                                    os.mkdir('/spinPics/rightCam/'+ l_img_series_str, 0o777)
-                                    os.chmod('/spinPics/rightCam/'+ l_img_series_str, 0o777)
+                                    os.mkdir('/spinPics/leftCam/'+ l_img_series_str, 0o777)
+                                    os.chmod('/spinPics/leftCam/'+ l_img_series_str, 0o777)
                                 #get the data
                                 image_result = cam.GetNextImage(1000)
                                 if image_result.IsIncomplete():
@@ -171,7 +174,7 @@ def acquire_images(cam_list):
                                     # Convert image to PixelFormat_RGB8
                                     image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
                                     # Create a unique filename
-                                    filename = '/spinPics/rightCam/%s/%d.jpg' % (l_img_series_str,l_img_series_count)
+                                    filename = '/spinPics/leftCam/%s/%d.jpg' % (l_img_series_str,l_img_series_count)
 
                                     # Save image
                                     image_converted.Save(filename)
@@ -200,6 +203,11 @@ def acquire_images(cam_list):
         # It is possible to interact with cameras through the camera list with
         # GetByIndex(); this is an alternative to retrieving cameras as
         # CameraPtr objects that can be quick and easy for small tasks.
+
+        ros_reader_node.destroy_node()
+        rclpy.shutdown()
+        print("rclpy shut down")
+
         for cam in cam_list:
 
             # End acquisition
