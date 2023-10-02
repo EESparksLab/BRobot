@@ -23,13 +23,13 @@ else
     exit 0
 fi
 
-echo "Adding new members to usergroup $grpname..." 
+echo "Adding new members to usergroup $grpname..."
 while :
 do
     # Show current members of the user group
     users=$(grep -E '^'$grpname':' /etc/group |sed -e 's/^.*://' |sed -e 's/, */, /g')
     if [ -z "$users" ]
-    then 
+    then
         echo "Usergroup $grpname is empty"
     else
         echo "Current members of $grpname group: $users"
@@ -37,7 +37,8 @@ do
 
     echo "To add a new member please enter username (or hit Enter to continue):"
     echo -n "$MY_PROMPT"
-    read usrname
+    #read usrname
+    usrname=""
     if [ "$usrname" = "" ]
     then
         break
@@ -45,7 +46,7 @@ do
         # Check if user name exists
         if (getent passwd $usrname > /dev/null)
         then
-            # Get confirmation that the username is ok 
+            # Get confirmation that the username is ok
             echo "Adding user $usrname to group $grpname group. Is this OK?"
             echo -n "$MY_YESNO_PROMPT"
             read confirm
@@ -63,6 +64,8 @@ do
 done
 
 # Create udev rule
+mkdir /etc/udev/
+mkdir /etc/udev/rules.d/
 UdevFile="/etc/udev/rules.d/40-flir-spinnaker.rules"
 echo
 echo "Writing the udev rules file...";
@@ -71,7 +74,8 @@ echo "SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"1724\", GROUP=\"$grpname\"" 1>>$Ude
 
 echo "Do you want to restart the udev daemon?"
 echo -n "$MY_YESNO_PROMPT"
-read confirm
+#read confirm
+confirm="N"
 if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ]
 then
     /etc/init.d/udev restart

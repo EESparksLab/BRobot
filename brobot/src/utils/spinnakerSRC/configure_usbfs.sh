@@ -64,7 +64,8 @@ then
                 echo "Would you like to change this to $USBFS_DEFAULT_VALUE MB?"
 
                 echo -n "$MY_YESNO_PROMPT"
-                read confirm
+                #read confirm
+                confirm="Y"
                 if ( [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ] )
                 then
                     # -i modifies the file and creates a backup, -r enables extended regex, -n suppresses output
@@ -115,7 +116,8 @@ then
     echo "). Set recommended (-rwxr--r--) permissions?"
 
     echo -n "$MY_YESNO_PROMPT"
-    read confirm
+    #read confirm
+    confirm="Y"
     if ( [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ] )
     then
         sudo chmod 744 "$RCLOCAL_PATH"

@@ -1,13 +1,13 @@
 #!/bin/bash
 
 set -o errexit
-
+confirm="Y"
 MY_YESNO_PROMPT='[Y/n] $ '
 
 echo "This is a script to assist with installation of the Spinnaker SDK."
 echo "Would you like to continue and install all the Spinnaker SDK packages?"
 echo -n "$MY_YESNO_PROMPT"
-read confirm
+#read confirm
 if ! ( [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ] )
 then
     exit 0
@@ -23,7 +23,7 @@ if [ ! -z "$EXISTING_VERSION" ]; then
     echo "A previous installation of Spinnaker has been detected on this machine (Version: $EXISTING_VERSION). Please consider uninstalling the previous version of Spinnaker before continuing with this installation." >&2
     echo "Would you like to continue with this installation?"
     echo -n "$MY_YESNO_PROMPT"
-    read confirm
+    #read confirm
     if ! ( [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ] )
     then
         exit 0
@@ -53,7 +53,7 @@ echo
 echo "Would you like to add a udev entry to allow access to USB hardware?"
 echo "  If a udev entry is not added, your cameras may only be accessible by running Spinnaker as sudo."
 echo -n "$MY_YESNO_PROMPT"
-read confirm
+#read confirm
 if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ]
 then
     echo "Launching udev configuration script..."
@@ -66,7 +66,7 @@ echo "  By default, Linux systems only allocate 16 MB of USB-FS buffer memory fo
 echo "  This may result in image acquisition issues from high-resolution cameras or multiple-camera set ups."
 echo "  NOTE: You can set this at any time by following the USB notes in the included README."
 echo -n "$MY_YESNO_PROMPT"
-read confirm
+#read confirm
 if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ]
 then
     echo "Launching USB-FS configuration script..."
@@ -81,7 +81,7 @@ echo "  NOTE: You can add the Spinnaker example paths at any time by following t
 echo "        section in the included README."
 echo -n "$MY_YESNO_PROMPT"
 
-read confirm
+#read confirm
 if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ]
 then
     echo "Launching Spinnaker paths configuration script..."
@@ -106,7 +106,7 @@ else
     echo "  NOTE: You can add the FLIR producer to GENICAM_GENTL${BITS}_PATH at any time by following the GenTL Setup notes in the included README."
     echo -n "$MY_YESNO_PROMPT"
 
-    read confirm
+    #read confirm
     if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || [ "$confirm" = "yes" ] || [ "$confirm" = "Yes" ] || [ "$confirm" = "" ]
     then
         echo "Launching GenTL path configuration script..."
