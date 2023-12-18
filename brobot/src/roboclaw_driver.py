@@ -129,7 +129,7 @@ def init_roboclaw():
 if __name__ == "__main__":
     # Initialize Motor Driver
     global rc, address
-    rc = Roboclaw("/dev/ttyACM1", 115200)
+    rc = Roboclaw("/dev/ttyACM0", 115200)
     if(rc.Open()):
         address = 128
         init_roboclaw()

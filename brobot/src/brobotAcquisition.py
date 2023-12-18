@@ -12,8 +12,8 @@ import time
 from rclpy.node import Node
 from std_msgs.msg import Bool
 
-r_aquisition_state = False
-l_aquisition_state = False
+r_acquisition_state = True
+l_acquisition_state = True
 
 R_CAM_SN = 23185348
 L_CAM_SN = 22624783
@@ -21,9 +21,10 @@ L_CAM_SN = 22624783
 class RosReader(Node):
     def __init__(self):
       super().__init__('brobot_acquisition_node')
-      self.r_cam_sub = self.create_subscription(Bool, '/righteye_cmd', r_listener_callback , 10)
-      self.l_cam_sub = self.create_subscription(Bool, '/lefteye_cmd', l_listener_callback , 10)
-
+      self.r_cam_sub = self.create_subscription(Bool, '/righteye_cmd', self.r_listener_callback , 10)
+      self.l_cam_sub = self.create_subscription(Bool, '/lefteye_cmd', self.l_listener_callback , 10)
+    #global r_listener_callback
+    #global l_listener_callback
     def r_listener_callback(self, msg):
         global r_acquisition_state
         r_acquisition_state = msg.data
@@ -60,7 +61,7 @@ def acquire_images(cam_list):
         #
 
         for i, cam in enumerate(cam_list):
-
+            s_node_map = cam.GetTLStreamNodeMap()
             # Set acquisition mode to continuous
             node_acquisition_mode = PySpin.CEnumerationPtr(cam.GetNodeMap().GetNode('AcquisitionMode'))
             if not PySpin.IsReadable(node_acquisition_mode) or not PySpin.IsWritable(node_acquisition_mode):
@@ -72,13 +73,21 @@ def acquire_images(cam_list):
                 print('Unable to set acquisition mode to continuous (entry \'continuous\' retrieval %d). \
                 Aborting... \n' % i)
                 return False
-
+            handling_mode = PySpin.CEnumerationPtr(s_node_map.GetNode('StreamBufferHandlingMode'))
+            if not PySpin.IsReadable(handling_mode) or not PySpin.IsWritable(handling_mode):
+                print('Unable to set Buffer Handling mode (node retrieval). Aborting...\n')
+                return False
+            
             acquisition_mode_continuous = node_acquisition_mode_continuous.GetValue()
 
             node_acquisition_mode.SetIntValue(acquisition_mode_continuous)
 
             print('Camera %d acquisition mode set to continuous...' % i)
 
+            handling_mode_entry = handling_mode.GetEntryByName('NewestOnly')
+            handling_mode.SetIntValue(handling_mode_entry.GetValue())
+            print('\n\nBuffer Handling Mode has been set to %s' % handling_mode_entry.GetDisplayName())
+            
             # Begin acquiring images
             cam.BeginAcquisition()
 
@@ -108,7 +117,7 @@ def acquire_images(cam_list):
         l_img_series_count = 0
         l_img_series_str = ""
         while(1):
-            rclpy.spin_once(ros_reader_node) #spin the node, check for  messages
+            # rclpy.spin_once(ros_reader_node) #spin the node, check for  messages
             global r_acquisition_state
             global l_acquisition_state
             print(r_acquisition_state)
@@ -120,41 +129,10 @@ def acquire_images(cam_list):
 
                     if PySpin.IsReadable(node_device_serial_number):
                         device_serial_number = node_device_serial_number.GetValue()
-                        #print('Camera %d serial number set to %s...' % (i, device_serial_number))
+                        # print('Camera %d serial number set to %s...' % (i, device_serial_number))
                     ##based on serial number we can check which side and weather it should be acquiring
-                    match(device_serial_number):
-                        case int(R_CAM_SN):
-                            if(r_acquisition_state):
-                                if r_img_series_count == 0:
-                                    r_img_series_str = time.strftime("%Y%m%d_%H%M%S")
-                                    os.mkdir('/spinPics/rightCam/'+ r_img_series_str, 0o777)
-                                    os.chmod('/spinPics/rightCam/'+ r_img_series_str, 0o777)
-                                #get the data
-                                image_result = cam.GetNextImage(1000)
-                                if image_result.IsIncomplete():
-                                    print('Image incomplete with image status %d ... \n' % image_result.GetImageStatus())
-                                else:
-                                    # Print image information
-                                    width = image_result.GetWidth()
-                                    height = image_result.GetHeight()
-                                    print('Camera %d grabbed image %d, width = %d, height = %d' % (i, n, width, height))
-
-                                    # Convert image to PixelFormat_RGB8
-                                    image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
-                                    # Create a unique filename
-                                    filename = '/spinPics/rightCam/%s/%d.jpg' % (r_img_series_str,r_img_series_count)
-
-                                    # Save image
-                                    image_converted.Save(filename)
-                                    print('Image saved at %s' % filename)
-
-                                    # Release image
-                                    image_result.Release()
-                                    print()
-                            else:
-                                r_img_series_count = 0
-                                r_img_series_str = ""
-                        case int(L_CAM_SN):
+                    if int(device_serial_number) == int(L_CAM_SN):
+                            #print("match left")
                             if(l_acquisition_state):
 
                                 if l_img_series_count == 0:
@@ -167,9 +145,9 @@ def acquire_images(cam_list):
                                     print('Image incomplete with image status %d ... \n' % image_result.GetImageStatus())
                                 else:
                                     # Print image information
-                                    width = image_result.GetWidth()
-                                    height = image_result.GetHeight()
-                                    print('Camera %d grabbed image %d, width = %d, height = %d' % (i, n, width, height))
+                                    # width = image_result.GetWidth()
+                                    # height = image_result.GetHeight()
+                                    # print('Camera %d grabbed image %d, width = %d, height = %d' % (i, l_img_series_count, width, height))
 
                                     # Convert image to PixelFormat_RGB8
                                     image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
@@ -182,10 +160,45 @@ def acquire_images(cam_list):
 
                                     # Release image
                                     image_result.Release()
-                                    print()
+                                    l_img_series_count += 1
                             else:
                                 l_img_series_count = 0
-                                l_img_series_str = ""
+                                l_img_series_str = ""                        
+                    if int(device_serial_number) == int(R_CAM_SN):
+                            #print("match right")
+                            if(r_acquisition_state):
+                                if r_img_series_count == 0:
+                                    r_img_series_str = time.strftime("%Y%m%d_%H%M%S")
+                                    os.mkdir('/spinPics/rightCam/'+ r_img_series_str, 0o777)
+                                    os.chmod('/spinPics/rightCam/'+ r_img_series_str, 0o777)
+                                #get the data
+                                image_result = cam.GetNextImage(1000)
+                                if image_result.IsIncomplete():
+                                    print('Image incomplete with image status %d ... \n' % image_result.GetImageStatus())
+                                else:
+                                    # Print image information
+                                    # width = image_result.GetWidth()
+                                    # height = image_result.GetHeight()
+                                    # print('Camera %d grabbed image %d, width = %d, height = %d' % (i, r_img_series_count , width, height))
+
+                                    # Convert image to PixelFormat_RGB8
+                                    image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
+                                    # Create a unique filename
+                                    filename = '/spinPics/rightCam/%s/%d.jpg' % (r_img_series_str,r_img_series_count)
+
+                                    # Save image
+                                    image_converted.Save(filename)
+                                    print('Image saved at %s' % filename)
+
+                                    # Release image
+                                    image_result.Release()
+                                    r_img_series_count += 1
+
+                            else:
+                                r_img_series_count = 0
+                                r_img_series_str = ""
+
+
 
 
 
