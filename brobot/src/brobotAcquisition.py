@@ -11,9 +11,10 @@ import rclpy
 import time
 from rclpy.node import Node
 from std_msgs.msg import Bool
-
-r_acquisition_state = True
-l_acquisition_state = True
+import threading 
+import queue
+r_acquisition_state = False
+l_acquisition_state = False
 
 R_CAM_SN = 23185348
 L_CAM_SN = 22624783
@@ -23,6 +24,7 @@ class RosReader(Node):
       super().__init__('brobot_acquisition_node')
       self.r_cam_sub = self.create_subscription(Bool, '/righteye_cmd', self.r_listener_callback , 10)
       self.l_cam_sub = self.create_subscription(Bool, '/lefteye_cmd', self.l_listener_callback , 10)
+      ##can probably add an action or another listener that can do the camera cleanup and exit if we so desire
     #global r_listener_callback
     #global l_listener_callback
     def r_listener_callback(self, msg):
@@ -32,12 +34,52 @@ class RosReader(Node):
         global l_acquisition_state
         l_acquisition_state = msg.data
 
+def fetch_camera_frames(result, cam, processor,side):
+    print("fetch_camera_frames was called for: ", side)
+    images = list()
+    state = True
+    while(state):
+        if side == "right":
+            global r_acquisition_state
+            state = r_acquisition_state
+        if side == "left":
+            global l_acquisition_state
+            state = l_acquisition_state
+        #get the data
+        print("While loop is running with state = ", state)
+        image_result = cam.GetNextImage(1000)
+        if image_result.IsIncomplete():
+            print('Image incomplete with image status %d ... \n' % image_result.GetImageStatus())
+        else:
+            # Print image information
+            # width = image_result.GetWidth()
+            # height = image_result.GetHeight()
+            # print('Camera %d grabbed image %d, width = %d, height = %d' % (i, l_img_series_count, width, height)
+            # Convert image to PixelFormat_RGB8
+            images.append(processor.Convert(image_result, PySpin.PixelFormat_RGB8))
+            # Release image 
+            image_result.Release()
+    result.put(images)
+    print("fetch_camera_frames has ended")
+    
+def store_images(images,side):
+    print("store_images was called for: ", side)
+    if side == "right":
+        file_location = "/spinPics/rightCam/"
+    if side == "left":
+        file_location = "/spinPics/leftCam/"
+    img_series_str = time.strftime("%Y%m%d_%H%M%S")
+    os.mkdir(file_location + img_series_str, 0o777)
+    os.chmod(file_location + img_series_str, 0o777)
+    for i, img in enumerate(images.get()):
+        filename = '%s%s/%d.jpg' % (file_location,img_series_str,i)
+        img.Save(filename)
+    print("store_images has completed")
+
 
 
 def acquire_images(cam_list):
     """
-    This function acquires and saves 10 images from each device.
-
     :param cam_list: List of cameras
     :type cam_list: CameraList
     :return: True if successful, False otherwise.
@@ -105,106 +147,66 @@ def acquire_images(cam_list):
 
         # Create ImageProcessor instance for post processing images
         processor = PySpin.ImageProcessor()
-
         # Set default image processor color processing method
         #
         # *** NOTES ***
         # By default, if no specific color processing algorithm is set, the image
         # processor will default to NEAREST_NEIGHBOR method.
         processor.SetColorProcessing(PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_HQ_LINEAR)
-        r_img_series_count = 0
-        r_img_series_str = ""
-        l_img_series_count = 0
-        l_img_series_str = ""
+        r_previous_state = False
+        l_previous_state = False
         while(1):
-            # rclpy.spin_once(ros_reader_node) #spin the node, check for  messages
+            rclpy.spin_once(ros_reader_node) #spin the node, check for  messages
             global r_acquisition_state
             global l_acquisition_state
-            print(r_acquisition_state)
-            print(l_acquisition_state)
             for i, cam in enumerate(cam_list):
                 try:
                     # Retrieve device serial number for filename
                     node_device_serial_number = PySpin.CStringPtr(cam.GetTLDeviceNodeMap().GetNode('DeviceSerialNumber'))
-
                     if PySpin.IsReadable(node_device_serial_number):
                         device_serial_number = node_device_serial_number.GetValue()
                         # print('Camera %d serial number set to %s...' % (i, device_serial_number))
                     ##based on serial number we can check which side and weather it should be acquiring
                     if int(device_serial_number) == int(L_CAM_SN):
-                            #print("match left")
-                            if(l_acquisition_state):
-
-                                if l_img_series_count == 0:
-                                    l_img_series_str = time.strftime("%Y%m%d_%H%M%S")
-                                    os.mkdir('/spinPics/leftCam/'+ l_img_series_str, 0o777)
-                                    os.chmod('/spinPics/leftCam/'+ l_img_series_str, 0o777)
-                                #get the data
-                                image_result = cam.GetNextImage(1000)
-                                if image_result.IsIncomplete():
-                                    print('Image incomplete with image status %d ... \n' % image_result.GetImageStatus())
-                                else:
-                                    # Print image information
-                                    # width = image_result.GetWidth()
-                                    # height = image_result.GetHeight()
-                                    # print('Camera %d grabbed image %d, width = %d, height = %d' % (i, l_img_series_count, width, height))
-
-                                    # Convert image to PixelFormat_RGB8
-                                    image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
-                                    # Create a unique filename
-                                    filename = '/spinPics/leftCam/%s/%d.jpg' % (l_img_series_str,l_img_series_count)
-
-                                    # Save image
-                                    image_converted.Save(filename)
-                                    print('Image saved at %s' % filename)
-
-                                    # Release image
-                                    image_result.Release()
-                                    l_img_series_count += 1
-                            else:
-                                l_img_series_count = 0
-                                l_img_series_str = ""                        
+                        if(l_acquisition_state and l_acquisition_state != l_previous_state):
+                            ##call the fetch_camera_frames()
+                            print("aquisition left turned on")
+                            l_images = queue.Queue()
+                            l_thread = threading.Thread(target=fetch_camera_frames,args=(l_images,cam,processor,"left"))
+                            l_thread.start()
+                            l_previous_state = l_acquisition_state 
+                        elif(not l_acquisition_state and l_acquisition_state != l_previous_state):
+                            ## can the join function here
+                            ## then call storing thread here
+                            print("aquisition left turned off")
+                            l_thread.join()
+                            l_store_thread = threading.Thread(target=store_images,args=(l_images,"left"))
+                            l_store_thread.start()
+                            l_previous_state = l_acquisition_state  
+                        else:
+                            l_previous_state = l_acquisition_state     
                     if int(device_serial_number) == int(R_CAM_SN):
-                            #print("match right")
-                            if(r_acquisition_state):
-                                if r_img_series_count == 0:
-                                    r_img_series_str = time.strftime("%Y%m%d_%H%M%S")
-                                    os.mkdir('/spinPics/rightCam/'+ r_img_series_str, 0o777)
-                                    os.chmod('/spinPics/rightCam/'+ r_img_series_str, 0o777)
-                                #get the data
-                                image_result = cam.GetNextImage(1000)
-                                if image_result.IsIncomplete():
-                                    print('Image incomplete with image status %d ... \n' % image_result.GetImageStatus())
-                                else:
-                                    # Print image information
-                                    # width = image_result.GetWidth()
-                                    # height = image_result.GetHeight()
-                                    # print('Camera %d grabbed image %d, width = %d, height = %d' % (i, r_img_series_count , width, height))
-
-                                    # Convert image to PixelFormat_RGB8
-                                    image_converted = processor.Convert(image_result, PySpin.PixelFormat_RGB8)
-                                    # Create a unique filename
-                                    filename = '/spinPics/rightCam/%s/%d.jpg' % (r_img_series_str,r_img_series_count)
-
-                                    # Save image
-                                    image_converted.Save(filename)
-                                    print('Image saved at %s' % filename)
-
-                                    # Release image
-                                    image_result.Release()
-                                    r_img_series_count += 1
-
-                            else:
-                                r_img_series_count = 0
-                                r_img_series_str = ""
-
-
-
-
-
+                        if(r_acquisition_state and r_acquisition_state != r_previous_state): #if acquisition mode turned on 
+                            ##call the fetch_camera_frames()
+                            print("aquistition right turned on")
+                            r_images = queue.Queue()
+                            r_thread = threading.Thread(target=fetch_camera_frames,args=(r_images,cam,processor,"right"))
+                            r_thread.start()
+                            r_previous_state = r_acquisition_state
+                        elif(not r_acquisition_state and r_acquisition_state != r_previous_state): # if acquisition mode turned off
+                            ## can the join function here
+                            ## then call storing thread here
+                            print("aquisition right turned off")
+                            r_thread.join()
+                            r_store_thread = threading.Thread(target=store_images,args=(r_images,"right"))
+                            r_store_thread.start()
+                            r_previous_state = r_acquisition_state
+                        else: # if no change in state
+                            r_previous_state = r_acquisition_state
+                
                 except PySpin.SpinnakerException as ex:
                     print('Error: %s' % ex)
-                    result = False
+                    result = False               
 
         # End acquisition for each camera
         #
