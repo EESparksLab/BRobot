@@ -10,8 +10,8 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 from std_msgs.msg import Float64
 from std_msgs.msg import Int32
-
 from utils.roboclaw_python.roboclaw_3 import Roboclaw
+
 class RosReader(Node):
     def __init__(self):
       super().__init__('roboclaw_driver')
@@ -133,7 +133,6 @@ if __name__ == "__main__":
     if(rc.Open()):
         address = 128
         init_roboclaw()
-        time.sleep(2)
         print('Motor driver ready...')
     else:
         print("open() isn't working")
@@ -144,4 +143,4 @@ if __name__ == "__main__":
     rclpy.spin(ros_reader_node)
     ros_reader_node.destroy_node()
     rclpy.shutdown()
-    stop_motors()  # on CTRL+C shutdown
+    stop_motors()

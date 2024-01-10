@@ -1,4 +1,4 @@
-// Humble beginning of Brobot control panel 
+// Humble beginning of Brobot control panel
 // the setup function runs once when you press reset or power the board
 int value = 0;
 int PIN_R = 2;
@@ -10,18 +10,18 @@ void setup() {
   pinMode(PIN_R, OUTPUT);
   pinMode(PIN_L, OUTPUT);
   pinMode(PIN_PRECHARGE, OUTPUT);
-  digitalWrite(PIN_PRECHARGE, HIGH);
+  digitalWrite(PIN_PRECHARGE, LOW);
   digitalWrite(PIN_R, LOW);
-  digitalWrite(PIN_L, LOW);  
+  digitalWrite(PIN_L, LOW);
 }
 
 // the loop function runs over and over again forever
 void loop() {
   if (Serial.available()) { // if there's data coming in from the serial connection
-    digitalWrite(PIN_PRECHARGE, LOW);
+    digitalWrite(PIN_PRECHARGE, HIGH);
     String inputString = Serial.readStringUntil('\n');
     switch(inputString[0]) {
-      case 'r': 
+      case 'r':
         digitalWrite(PIN_R, 1);
         break;
       case 'l':
@@ -39,7 +39,7 @@ void loop() {
       case ']':
         digitalWrite(PIN_R,0);
         break;
-    }  
+    }
   }
 }
 void errorBlink(int pin){

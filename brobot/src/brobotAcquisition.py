@@ -35,7 +35,6 @@ class RosReader(Node):
         l_acquisition_state = msg.data
 
 def fetch_camera_frames(result, cam, processor,side):
-    print("fetch_camera_frames was called for: ", side)
     images = list()
     state = True
     while(state):
@@ -46,7 +45,6 @@ def fetch_camera_frames(result, cam, processor,side):
             global l_acquisition_state
             state = l_acquisition_state
         #get the data
-        print("While loop is running with state = ", state)
         image_result = cam.GetNextImage(1000)
         if image_result.IsIncomplete():
             print('Image incomplete with image status %d ... \n' % image_result.GetImageStatus())
@@ -60,7 +58,6 @@ def fetch_camera_frames(result, cam, processor,side):
             # Release image 
             image_result.Release()
     result.put(images)
-    print("fetch_camera_frames has ended")
     
 def store_images(images,side):
     print("store_images was called for: ", side)
@@ -74,7 +71,7 @@ def store_images(images,side):
     for i, img in enumerate(images.get()):
         filename = '%s%s/%d.jpg' % (file_location,img_series_str,i)
         img.Save(filename)
-    print("store_images has completed")
+    del images
 
 
 
@@ -168,17 +165,12 @@ def acquire_images(cam_list):
                         # print('Camera %d serial number set to %s...' % (i, device_serial_number))
                     ##based on serial number we can check which side and weather it should be acquiring
                     if int(device_serial_number) == int(L_CAM_SN):
-                        if(l_acquisition_state and l_acquisition_state != l_previous_state):
-                            ##call the fetch_camera_frames()
-                            print("aquisition left turned on")
+                        if(l_acquisition_state and l_acquisition_state != l_previous_state): #if acquisition mode turned on 
                             l_images = queue.Queue()
                             l_thread = threading.Thread(target=fetch_camera_frames,args=(l_images,cam,processor,"left"))
                             l_thread.start()
                             l_previous_state = l_acquisition_state 
-                        elif(not l_acquisition_state and l_acquisition_state != l_previous_state):
-                            ## can the join function here
-                            ## then call storing thread here
-                            print("aquisition left turned off")
+                        elif(not l_acquisition_state and l_acquisition_state != l_previous_state): # if acquisition mode turned off
                             l_thread.join()
                             l_store_thread = threading.Thread(target=store_images,args=(l_images,"left"))
                             l_store_thread.start()
@@ -187,16 +179,11 @@ def acquire_images(cam_list):
                             l_previous_state = l_acquisition_state     
                     if int(device_serial_number) == int(R_CAM_SN):
                         if(r_acquisition_state and r_acquisition_state != r_previous_state): #if acquisition mode turned on 
-                            ##call the fetch_camera_frames()
-                            print("aquistition right turned on")
                             r_images = queue.Queue()
                             r_thread = threading.Thread(target=fetch_camera_frames,args=(r_images,cam,processor,"right"))
                             r_thread.start()
                             r_previous_state = r_acquisition_state
                         elif(not r_acquisition_state and r_acquisition_state != r_previous_state): # if acquisition mode turned off
-                            ## can the join function here
-                            ## then call storing thread here
-                            print("aquisition right turned off")
                             r_thread.join()
                             r_store_thread = threading.Thread(target=store_images,args=(r_images,"right"))
                             r_store_thread.start()
