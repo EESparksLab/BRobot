@@ -13,6 +13,7 @@ previous_file_time_r = 0
 previous_file_time_l = 0
 
 ser = serial.Serial('/dev/ttyUSB0',9600,timeout=1)
+ser.write('||'.encode('utf-8'))  ###need to insert this to initiate the solid state relay.  
 
 class RosReader(Node):
     def __init__(self):

@@ -8,9 +8,8 @@ debounce_l = 0
 class JoystickToTwistNode(Node):
     def __init__(self):
         super().__init__('joystick_to_twist_node')
-        self.joy_sub = self.create_subscription(
-            Joy, '/joy', self.joy_callback, 10)
-        self.cmd_pub = self.create_publisher(Twist, '/tank_cmd', 10)
+        self.joy_sub = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
+        self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.r_cam_pub = self.create_publisher(Bool, 'righteye_cmd', 10)
         self.l_cam_pub = self.create_publisher(Bool, 'lefteye_cmd', 10)
         self.timer = self.create_timer(0.5,self.timer_callback)
