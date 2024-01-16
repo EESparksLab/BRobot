@@ -1,0 +1,7 @@
+path: /mnt/c/Users/Sebastian/Desktop/UD_Documents/SparksLab/MachineLearning/training_model_attempt1/data
+train: images
+val: testImages
+
+
+names:
+        0: braceRoot
