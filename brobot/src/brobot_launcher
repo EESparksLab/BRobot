@@ -9,6 +9,9 @@ nohup python3 /source/joy_driver2.py > joydriver.out 2>&1 &
 
 #runs the roboclaw_driver node to run the tank base 
 nohup python3 /source/roboclaw_driver.py > robo.out 2>&1 &
+#for ROS2 Node for Roboclaw, cannot properly use until we find encoders
+# source /source/ros2_roboclaw_driver/install/local_setup.bash
+# nohup ros2 launch ros2_roboclaw_driver ros2_roboclaw_driver.launch.py &
 
 #runs the left camera 
 nohup python3 /source/brobot_acquisition_l.py > l_camera.out &

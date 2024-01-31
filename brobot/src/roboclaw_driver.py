@@ -32,14 +32,24 @@ class RoboclawDriver:
 
     def run_roboclaw(self):
         try:
-            M1_counts, M2_counts = self.get_counts()
-            self.run_motors(M1_counts, M2_counts)  # Send commands to motors
-            print("running motors with counts : ", M1_counts,M2_counts)
-            msg_batt = Float64()
-            msg_batt.data = float(rc.ReadMainBatteryVoltage(address)[1])/10
-            self.battery_pub.publish(msg_batt) 
-        except:
-            print('Roboclaw power disconnected')
+            # M1_counts, M2_counts = self.get_counts()
+            # self.run_motors(M1_counts, M2_counts)  # Send commands to motors
+            pwm_M2, pwm_M1 = self.get_PWM_percent()
+            if pwm_M1 >= 0:
+                rc.ForwardM1(address,pwm_M1)
+            if pwm_M2 >= 0:    
+                rc.ForwardM2(address,pwm_M2)
+            if pwm_M1 < 0:
+                rc.BackwardM1(address,pwm_M1*-1)
+            if pwm_M2 < 0:
+                rc.BackwardM2(address,pwm_M2*-1)
+            # print("running motors with counts : ", M1_counts,M2_counts)
+            # msg_batt = Float64()
+            # msg_batt.data = float(rc.ReadMainBatteryVoltage(address)[1])/10
+            # self.battery_pub.publish(msg_batt)
+        except Exception as e:
+            print(e)    
+            print('Roboclaw disconnected')
             try:
                 if(rc.Open()):
                     print("roboclaw reconnected")
@@ -74,6 +84,26 @@ class RoboclawDriver:
         M2_counts = lrev*counts_per_rev        #may need to switch lrev and rrev
 
         return(M1_counts, M2_counts)
+    #Open loop control of motors requires percentage of PWM duty cycle
+    #This needs to do the same thing as get_counts... but cut out the encoder counts cause they're an extra step
+    def get_PWM_percent(self):
+        l = 13.5 * 0.0254 #length between wheels
+        rwheel = 6.5* 0.0254 #radius of wheel in meters
+        # vright = float(((self.joy_cmd.angular.z*l) + 2*self.joy_cmd.linear.x)/2)
+        # vleft = float(2*self.joy_cmd.linear.x - vright)
+        vright = float(((2 * self.joy_cmd.linear.x) + (l * (self.joy_cmd.angular.z))) / (2 * rwheel))
+        vleft =  float(((2 * self.joy_cmd.linear.x) - (l * (self.joy_cmd.angular.z))) / (2 * rwheel))
+        # C = rwheel*2*math.pi
+        # lrev = vleft/C
+        # rrev = vright/C
+        max_velocity = 6.28 # rads/second
+        # maximum pwm is an 8 bit integer 128
+        pwm_percent_r = self.constrain(vright/max_velocity * float(127),-127,127)
+        pwm_percent_l = self.constrain(vleft/max_velocity * float(127),-127,127)
+        print("wheel_velocities: " + str(vright) + "," + str(vleft))
+        print("pwm_percents: " + str(pwm_percent_l) + "," + str(pwm_percent_r))
+        return(int(pwm_percent_r),int(pwm_percent_l)) 
+
 
     def constrain(self, val, min_val, max_val):
         return min(max_val, max(min_val, val))

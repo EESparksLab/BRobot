@@ -27,19 +27,23 @@ class JoystickToTwistNode(Node):
 
         y_joy = joy_msg.axes[3] #right joystick y axis
         x_joy = joy_msg.axes[2] #right joystick x axis
-        #converting Joystick input to tank control (taken from the old code)
-        # Define joystick motor out parameters '''
-        ymin_in, xmin_in = -1.0,-1.0
-        ymax_in, xmax_in = 1.0, 1.0
-        #  ADJUST THESE VALUES TO CHANGE FORWARD VELOCITY (v) OR STEERING VELOCITY (w)
-        #  Set min = -max    ## no idea what this means
-        ymin_out, xmin_out = -1.5, -1.0  #min v, min w
-        ymax_out, xmax_out = 1.5, 1.0    #max v, max w
-        M1_map = (y_joy -ymin_in) * (ymax_out-ymin_out) / (ymax_in-ymin_in) + ymin_out
-        M2_map = (x_joy -xmin_in) * (xmax_out-xmin_out) / (xmax_in-xmin_in) + xmin_out
+        # #converting Joystick input to tank control (taken from the old code)
+        # # Define joystick motor out parameters '''
+        # ymin_in, xmin_in = -1.0,-1.0
+        # ymax_in, xmax_in = 1.0, 1.0
+        # #  ADJUST THESE VALUES TO CHANGE FORWARD VELOCITY (v) OR STEERING VELOCITY (w)
+        # ymin_out, xmin_out = -1.0, -1.0  #min v, min w
+        # ymax_out, xmax_out = 1.0, 1.0    #max v, max w
+        # M1_map = (y_joy -ymin_in) * (ymax_out-ymin_out) / (ymax_in-ymin_in) + ymin_out
+        # M2_map = (x_joy -xmin_in) * (xmax_out-xmin_out) / (xmax_in-xmin_in) + xmin_out
 
-        twist_msg.angular.z = constrain(M1_map, ymin_out, ymax_out)
-        twist_msg.linear.x = constrain(M2_map, xmin_out, xmax_out)
+        # twist_msg.angular.z = constrain(M1_map, ymin_out, ymax_out)
+        # twist_msg.linear.x = constrain(M2_map, xmin_out, xmax_out)
+        #seems like all this code above does nothing  
+        max_velocity_linear = 1   ##this can be our rate limiter in the future
+        max_velocity_angular = 6.28
+        twist_msg.angular.z = x_joy * max_velocity_angular
+        twist_msg.linear.x = y_joy * max_velocity_linear
         self.cmd_pub.publish(twist_msg)
 
         #if the right face button is pressed; then toggle the right cam
