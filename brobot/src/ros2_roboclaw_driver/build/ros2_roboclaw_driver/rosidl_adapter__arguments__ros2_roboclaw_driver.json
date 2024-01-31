@@ -1,0 +1,7 @@
+{
+  "package_name": "ros2_roboclaw_driver",
+  "non_idl_tuples": [
+    "/source/ros2_roboclaw_driver:msg/RoboClawStatus.msg",
+    "/source/ros2_roboclaw_driver:srv/ResetEncoders.srv"
+  ]
+}

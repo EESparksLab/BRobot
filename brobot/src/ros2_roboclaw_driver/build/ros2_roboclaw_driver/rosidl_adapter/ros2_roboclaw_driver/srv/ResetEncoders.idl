@@ -1,0 +1,17 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from ros2_roboclaw_driver/srv/ResetEncoders.srv
+// generated code does not contain a copyright notice
+
+
+module ros2_roboclaw_driver {
+  module srv {
+    struct ResetEncoders_Request {
+      int64 left;
+
+      int64 right;
+    };
+    struct ResetEncoders_Response {
+      boolean ok;
+    };
+  };
+};
