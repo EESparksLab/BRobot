@@ -16,12 +16,12 @@ class JoystickToTwistNode(Node):
         self.cam_triggers = [False, False]
     
     def timer_callback(self):
-    	msg_r = Bool()
-    	msg_l = Bool()
-    	msg_l.data = self.cam_triggers[0]
-    	msg_r.data = self.cam_triggers[1]
-    	self.r_cam_pub.publish(msg_r)
-    	self.l_cam_pub.publish(msg_l)
+        msg_r = Bool()
+        msg_l = Bool()
+        msg_l.data = self.cam_triggers[0]
+        msg_r.data = self.cam_triggers[1]
+        self.r_cam_pub.publish(msg_r)
+        self.l_cam_pub.publish(msg_l)
     def joy_callback(self, joy_msg):
         twist_msg = Twist()
 
