@@ -1,1 +1,0 @@
-/source/ros2_roboclaw_driver/msg/RoboClawStatus.msg

@@ -1,1 +1,0 @@
-/source/ros2_roboclaw_driver/build/ros2_roboclaw_driver/rosidl_generator_py/ros2_roboclaw_driver/msg/_robo_claw_status_s.c

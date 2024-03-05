@@ -1,1 +1,0 @@
-/source/ros2_roboclaw_driver/build/ros2_roboclaw_driver/ament_cmake_environment_hooks/local_setup.sh

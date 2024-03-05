@@ -1,0 +1,11 @@
+#!/bin/bash
+SRCDIR=$(pwd)/ros2_ws/
+docker run -it \
+    -v /var/run/dbus/:/var/run/dbus \
+    -v $SRCDIR:/ros2_ws \
+    -v $SRCDIR/src/brobot/src/spinPics:/spinPics \
+    --device=/dev/ttyACM0   \
+    --device=/dev/ttyACM1   \
+    --privileged \
+    brobot:nodal $@
+

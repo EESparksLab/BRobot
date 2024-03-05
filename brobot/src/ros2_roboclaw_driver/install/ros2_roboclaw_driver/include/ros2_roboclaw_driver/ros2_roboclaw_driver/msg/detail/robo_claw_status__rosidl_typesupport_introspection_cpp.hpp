@@ -1,1 +1,0 @@
-/source/ros2_roboclaw_driver/build/ros2_roboclaw_driver/rosidl_typesupport_introspection_cpp/ros2_roboclaw_driver/msg/detail/robo_claw_status__rosidl_typesupport_introspection_cpp.hpp

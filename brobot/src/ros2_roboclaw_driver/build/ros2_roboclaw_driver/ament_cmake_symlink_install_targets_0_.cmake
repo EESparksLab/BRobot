@@ -1,1 +1,0 @@
-ament_cmake_symlink_install_targets("TARGET_FILES" "/source/ros2_roboclaw_driver/build/ros2_roboclaw_driver/rosidl_generator_py/ros2_roboclaw_driver/ros2_roboclaw_driver_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" "TARGETS" "ros2_roboclaw_driver__rosidl_typesupport_fastrtps_c__pyext" "DESTINATION" "local/lib/python3.10/dist-packages/ros2_roboclaw_driver")
