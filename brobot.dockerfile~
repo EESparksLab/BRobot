@@ -6,10 +6,7 @@ RUN apt install -y --fix-missing \
     usbutils \
     python3-pip \
     udev \
-    ros-humble-spinnaker-camera-driver \
-    ros-humble-image-pipeline   \
-    x11-apps 	
-
+    ros-humble-spinnaker-camera-driver
 RUN pip install \
     pyserial \
     numpy \
@@ -22,9 +19,3 @@ RUN pip install \
 #following the steps to set up the ros camera driver
 RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1e10", GROUP="flirimaging"' | sudo tee -a /etc/udev/rules.d/40-flir-spinnaker.rules
 RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1724", GROUP="flirimaging"' | sudo tee -a /etc/udev/rules.d/40-flir-spinnaker.rules
-
-
-#changes to add the ros workspace to the entrypoint 
-RUN awk '/--/ { print; print "source /ros2_ws/install/setup.bash"; next}1' ros_entrypoint.sh > temp
-RUN mv temp ros_entrypoint.sh
-RUN chmod +x ros_entrypoint.sh
