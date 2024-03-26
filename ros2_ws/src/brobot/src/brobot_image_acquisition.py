@@ -35,7 +35,7 @@ class RosReader(Node):
     
     def r_image_callback(self,msg):
         if self.r_acquisition_state:
-            cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+            cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             #insert custom naming here
             file_location = "/spinPics/rightCam/"
             if self.r_img_counter == 0:

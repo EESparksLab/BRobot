@@ -14,8 +14,8 @@ RUN pip install \
     pyserial \
     numpy \
     matplotlib \
-    pillow
-
+    pillow \
+    pandas
 ## TODO: cp the custom launch files for the camera driver into the proper directory
 #/opt/ros/humble/share/spinnaker_camera_driver/launch
 
@@ -25,6 +25,6 @@ RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1724", GROUP="flirimaging"' | sudo
 
 
 #changes to add the ros workspace to the entrypoint 
-RUN awk '/--/ { print; print "source /ros2_ws/install/setup.bash"; next}1' ros_entrypoint.sh > temp
+RUN awk '/--/ { print; print "source /ros2_ws/install/setup.bash || true"; next}1' ros_entrypoint.sh > temp
 RUN mv temp ros_entrypoint.sh
 RUN chmod +x ros_entrypoint.sh
