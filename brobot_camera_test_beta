@@ -1,0 +1,31 @@
+#!/bin/bash
+SRCDIR=$(pwd)/ros2_ws/
+xhost +local:docker
+docker run \
+    -v /var/run/dbus/:/var/run/dbus \
+    -v $SRCDIR:/ros2_ws \
+    -v $SRCDIR/src/brobot/src/spinPics:/spinPics \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v /root/.Xauthority:/root/.Xauthority \
+    --env DISPLAY=unix$DISPLAY \
+    --device=/dev/ttyACM0   \
+    --device=/dev/ttyACM1   \
+    --net=host \
+    --privileged \
+    brobot ros2 launch brobot camera.test.beta.launch.py &> /dev/null &
+
+#get the docker image id
+sleep 5
+container_id=$(docker ps -q --filter "status=running")
+echo $container_id
+
+#docker exec an ros run command through the entrypoint 
+nohup docker exec $container_id /ros_entrypoint.sh ros2 run image_view image_view --ros-args -r image:=/left_camera/image_raw &
+sleep 1 
+#docker exec to run the python script through the entrypoint 
+read -p "Press Enter to continue..."
+docker exec -it $container_id /ros_entrypoint.sh python3 /ros2_ws/src/brobot/src/camera_test_beta.py 
+
+#when test script is finished kill the docker container
+docker kill $container_id
+
