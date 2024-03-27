@@ -21,14 +21,16 @@ class RosReader(Node):
         super().__init__('Camera_test_node')
         self.l_cam_image_sub = self.create_subscription(Image,'/left_camera/image_raw',self.l_image_callback,10)
         self.meta_data_sub = self.create_subscription(ImageMetaData,'/left_camera/meta',self.meta_data_callback,10)
-        self.cam_control_pub = self.create_publisher(CameraControl,'/left_camera/control',10)
+        self.cam_control_pub = self.create_publisher(CameraControl,'/exposure_control/control',10)
         self.bridge = CvBridge()
         self.flag = False
         self.cam_trigger = False
         self.file_name_str = ""
         self.meta_data_trigger = False
+        self.current_expt = 0
+        self.current_gain = 0
 
-    #Ripped from the new aquisition code, will need edits for this test
+    #Ripped from the new aquisition code, wisource "/opt/ros/$ROS_DISTRO/setup.bash" --ll need edits for this test
     def l_image_callback(self,msg):
         if self.cam_trigger:
             cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
@@ -46,14 +48,16 @@ class RosReader(Node):
     def meta_data_callback(self,msg):
         if self.meta_data_trigger: 
             data = [msg.exposure_time,msg.gain]
+            self.current_expt = data[0]
+            self.current_gain = data[1]
             #save this meta data to a file
             filename = "/spinPics/camera_test/" + self.file_name_str
             with open(filename + ".csv", "w", newline="") as file:
                 writer = csv.writer(file)
                 # writer.writerow(["File Name", "Exposure Time", "Gain"])
                 writer.writerow([self.file_name_str, data[0], data[1]])
-                writer.close()
-            print("meta data received")
+                file.close()
+            #print("meta data received")
 
 
     def threaded_node_spin(self):
@@ -88,8 +92,8 @@ for file in files:
   quantiles_k.append([df[2].quantile(0.25),df[2].quantile(0.50),df[2].quantile(0.75)])
 quantiles_k_matrix = np.array(quantiles_k)
 quantiles_expt_matrix = np.array(quantiles_expt)
-
-
+ros_reader_node.file_name_str = "null"
+ros_reader_node.meta_data_trigger = True
 for d in working_distances:
   input("Set to working distance " + str(d) + " inches" + " Press Enter to continue..." )
   counter = 0
@@ -101,14 +105,17 @@ for d in working_distances:
             msg.exposure_time = int(exp)
             msg.gain = k
             ros_reader_node.cam_control_pub.publish(msg)
-            ros_reader_node.file_name_str = "aperture_" + str(N) + "_exp_" + str(exp) + "_gain_" + str(k)
+            time.sleep(1)
+            ros_reader_node.file_name_str = "distance_"+ str(d) + "_aperture_" + str(N) + "_exp_" + str(exp) + "_gain_" + str(k)
+            while(int(ros_reader_node.current_expt) != int(exp) or int(ros_reader_node.current_gain) != int(k)):
+            	print(str(ros_reader_node.current_expt) + " != " + str(exp))
+            	print(str(ros_reader_node.current_gain) + " != " + str(k))
+            	pass
             ros_reader_node.cam_trigger = True
-            # ros_reader_node.meta_data_trigger = True
             while(ros_reader_node.cam_trigger):
                 pass
-            # ros_reader_node.meta_data_trigger = False
     counter+=1
-    
+ros_reader_node.meta_data_trigger = False    
 
     
 
